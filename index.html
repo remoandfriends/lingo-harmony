@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Spanish Listening Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500;1,9..144,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  body { margin: 0; background: #FAF5EC; font-family: 'DM Sans', sans-serif; }
+  * { box-sizing: border-box; }
+  button:focus-visible, textarea:focus-visible { outline: 2px solid #C8553D; outline-offset: 2px; }
+  ::selection { background: #C8553D; color: #FAF5EC; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef, useCallback } = React;
+
+/* =========================================================================
+   PHRASE BANK — 125 phrases across 5 tiers
+   ========================================================================= */
+const PHRASES = [
+  // TIER 1 - Beginner
+  { id: 101, tier: 1, s: "Hola, ¿cómo estás?", e: "Hi, how are you?", topic: "A basic greeting." },
+  { id: 102, tier: 1, s: "¿Cómo te llamas?", e: "What's your name?", topic: "Asking someone's name." },
+  { id: 103, tier: 1, s: "Mucho gusto en conocerte.", e: "Nice to meet you.", topic: "A polite introduction." },
+  { id: 104, tier: 1, s: "¿De dónde eres tú?", e: "Where are you from?", topic: "Asking where someone is from." },
+  { id: 105, tier: 1, s: "Soy de los Estados Unidos.", e: "I'm from the United States.", topic: "Saying where you're from." },
+  { id: 106, tier: 1, s: "¿Qué hora es?", e: "What time is it?", topic: "Asking the time." },
+  { id: 107, tier: 1, s: "Son las tres de la tarde.", e: "It's three in the afternoon.", topic: "Telling the time." },
+  { id: 108, tier: 1, s: "Tengo mucha hambre.", e: "I'm very hungry.", topic: "Saying you're hungry." },
+  { id: 109, tier: 1, s: "¿Quieres comer algo?", e: "Do you want to eat something?", topic: "Inviting someone to eat." },
+  { id: 110, tier: 1, s: "Me gusta mucho el café.", e: "I really like coffee.", topic: "Sharing a preference about a drink." },
+  { id: 111, tier: 1, s: "¿Dónde está el baño?", e: "Where's the bathroom?", topic: "Asking for the bathroom." },
+  { id: 112, tier: 1, s: "No entiendo, ¿puedes repetir?", e: "I don't understand, can you repeat?", topic: "Asking someone to repeat." },
+  { id: 113, tier: 1, s: "¿Cuántos años tienes?", e: "How old are you?", topic: "Asking someone's age." },
+  { id: 114, tier: 1, s: "Tengo treinta años.", e: "I'm thirty years old.", topic: "Stating your age." },
+  { id: 115, tier: 1, s: "Mañana voy al supermercado.", e: "Tomorrow I'm going to the supermarket.", topic: "A plan for tomorrow." },
+  { id: 116, tier: 1, s: "Hace mucho calor hoy.", e: "It's very hot today.", topic: "Talking about the weather." },
+  { id: 117, tier: 1, s: "Me gusta tu camisa.", e: "I like your shirt.", topic: "Giving a compliment about clothes." },
+  { id: 118, tier: 1, s: "¿Qué haces los fines de semana?", e: "What do you do on weekends?", topic: "Asking about weekend habits." },
+  { id: 119, tier: 1, s: "Voy a la playa con mis amigos.", e: "I'm going to the beach with my friends.", topic: "A plan with friends." },
+  { id: 120, tier: 1, s: "¿Tienes hermanos?", e: "Do you have siblings?", topic: "Asking about siblings." },
+  { id: 121, tier: 1, s: "Tengo una hermana mayor.", e: "I have an older sister.", topic: "Talking about a family member." },
+  { id: 122, tier: 1, s: "Mi familia vive en California.", e: "My family lives in California.", topic: "Where family lives." },
+  { id: 123, tier: 1, s: "¿Hablas inglés?", e: "Do you speak English?", topic: "Asking about languages someone speaks." },
+  { id: 124, tier: 1, s: "Estoy aprendiendo español.", e: "I'm learning Spanish.", topic: "Telling someone you're studying a language." },
+  { id: 125, tier: 1, s: "Nos vemos mañana, cuídate.", e: "See you tomorrow, take care.", topic: "Saying goodbye." },
+
+  // TIER 2 - Easy-Intermediate
+  { id: 201, tier: 2, s: "¿Sabes a qué hora abre el banco mañana?", e: "Do you know what time the bank opens tomorrow?", topic: "Asking about a business's hours." },
+  { id: 202, tier: 2, s: "Necesito comprar pan antes de regresar a la casa.", e: "I need to buy bread before going back home.", topic: "An errand on the way home." },
+  { id: 203, tier: 2, s: "Mi mamá me llamó como tres veces esta mañana.", e: "My mom called me like three times this morning.", topic: "Mentioning calls from a parent." },
+  { id: 204, tier: 2, s: "No me acuerdo dónde dejé las llaves del carro.", e: "I don't remember where I left the car keys.", topic: "Misplaced keys." },
+  { id: 205, tier: 2, s: "¿Me puedes ayudar con esta caja? Está muy pesada.", e: "Can you help me with this box? It's really heavy.", topic: "Asking for help lifting something." },
+  { id: 206, tier: 2, s: "La fiesta empezó a las nueve pero yo llegué tardísimo.", e: "The party started at nine but I got there really late.", topic: "Showing up late to an event." },
+  { id: 207, tier: 2, s: "Anoche no pude dormir porque los vecinos hacían mucho ruido.", e: "Last night I couldn't sleep because the neighbors were very loud.", topic: "Noisy neighbors keeping you up." },
+  { id: 208, tier: 2, s: "Mi perro siempre se escapa cuando dejo la puerta abierta.", e: "My dog always escapes when I leave the door open.", topic: "A pet running off." },
+  { id: 209, tier: 2, s: "¿Ya viste la película nueva que salió la semana pasada?", e: "Did you see the new movie that came out last week?", topic: "Asking about a recent movie." },
+  { id: 210, tier: 2, s: "El tráfico está terrible hoy, tardé casi una hora en llegar.", e: "Traffic is terrible today, it took me almost an hour to get here.", topic: "Complaining about traffic." },
+  { id: 211, tier: 2, s: "Mi jefe me pidió que trabajara este sábado y no quería.", e: "My boss asked me to work this Saturday and I didn't want to.", topic: "Being asked to work on the weekend." },
+  { id: 212, tier: 2, s: "¿Cuánto cuesta este vestido? Está bien bonito pero caro.", e: "How much does this dress cost? It's really pretty but expensive.", topic: "Shopping for a dress." },
+  { id: 213, tier: 2, s: "Me duele la cabeza desde que me levanté esta mañana.", e: "My head has been hurting since I woke up this morning.", topic: "A headache that started in the morning." },
+  { id: 214, tier: 2, s: "Voy a ir al gimnasio después del trabajo si tengo tiempo.", e: "I'm going to the gym after work if I have time.", topic: "A possible gym plan after work." },
+  { id: 215, tier: 2, s: "¿Quieres salir a tomar algo el viernes en la noche?", e: "Do you want to go out for a drink Friday night?", topic: "Inviting someone out for a drink." },
+  { id: 216, tier: 2, s: "El restaurante nuevo en la esquina está buenísimo, hay que ir.", e: "The new restaurant on the corner is really good, we should go.", topic: "Recommending a new restaurant." },
+  { id: 217, tier: 2, s: "Mi hermano se mudó a Miami el mes pasado por un trabajo.", e: "My brother moved to Miami last month for a job.", topic: "A sibling moving for work." },
+  { id: 218, tier: 2, s: "No me gusta nada el invierno, prefiero el calor del verano.", e: "I don't like winter at all, I prefer the summer heat.", topic: "A season preference." },
+  { id: 219, tier: 2, s: "Tengo que estudiar para el examen de mañana, deséame suerte.", e: "I have to study for tomorrow's exam, wish me luck.", topic: "Studying for an exam." },
+  { id: 220, tier: 2, s: "¿A qué hora termina tu clase de inglés los martes?", e: "What time does your English class end on Tuesdays?", topic: "Class schedule." },
+  { id: 221, tier: 2, s: "Mi vecina siempre pone la música muy fuerte los domingos.", e: "My neighbor always plays music really loud on Sundays.", topic: "A loud neighbor on weekends." },
+  { id: 222, tier: 2, s: "Compré dos boletos para el concierto del próximo mes.", e: "I bought two tickets for next month's concert.", topic: "Concert tickets." },
+  { id: 223, tier: 2, s: "¿Cómo se dice \"I miss you\" en español? Siempre se me olvida.", e: "How do you say \"I miss you\" in Spanish? I always forget.", topic: "Asking how to say something in Spanish." },
+  { id: 224, tier: 2, s: "Olvidé mi cargador en la oficina y mi teléfono está muerto.", e: "I forgot my charger at the office and my phone is dead.", topic: "Phone died because charger was left at work." },
+  { id: 225, tier: 2, s: "La comida estaba muy rica pero el servicio fue lentísimo.", e: "The food was really good but the service was super slow.", topic: "Reviewing a restaurant experience." },
+
+  // TIER 3 - Intermediate
+  { id: 301, tier: 3, s: "Mi novia y yo llevamos casi tres años saliendo y estamos pensando en mudarnos juntos el próximo año.", e: "My girlfriend and I have been dating for almost three years and we're thinking about moving in together next year.", topic: "A long-term relationship considering moving in together." },
+  { id: 302, tier: 3, s: "El doctor me dijo que tengo que dejar de comer tanta azúcar porque la presión la tengo alta.", e: "The doctor told me I have to stop eating so much sugar because my blood pressure is high.", topic: "A doctor's advice about diet and blood pressure." },
+  { id: 303, tier: 3, s: "Cuando era niño, pasaba todos los veranos en la casa de mis abuelos allá en el rancho.", e: "When I was a kid, I spent every summer at my grandparents' house out at the ranch.", topic: "Childhood summers at grandparents' place." },
+  { id: 304, tier: 3, s: "No puedo creer que ya sea diciembre, la verdad es que este año pasó volando.", e: "I can't believe it's already December, honestly this year flew by.", topic: "Surprise about how fast the year went." },
+  { id: 305, tier: 3, s: "Mi jefa me ofreció un ascenso pero significa que tendría que viajar todas las semanas.", e: "My boss offered me a promotion but it means I'd have to travel every week.", topic: "A promotion offer with heavy travel." },
+  { id: 306, tier: 3, s: "Anoche estaba tan cansada que me quedé dormida en el sofá viendo la televisión.", e: "Last night I was so tired I fell asleep on the couch watching TV.", topic: "Falling asleep on the couch from exhaustion." },
+  { id: 307, tier: 3, s: "Mi hijo no quiere ir a la escuela porque dice que los otros niños se burlan de él.", e: "My son doesn't want to go to school because he says the other kids make fun of him.", topic: "A child being teased at school." },
+  { id: 308, tier: 3, s: "Si tuviera más tiempo libre, aprendería a tocar la guitarra como siempre había querido.", e: "If I had more free time, I'd learn to play guitar like I'd always wanted to.", topic: "A hypothetical wish to learn guitar." },
+  { id: 309, tier: 3, s: "La verdad no sé qué hacer, mi novio quiere casarse pero yo no me siento lista todavía.", e: "Honestly I don't know what to do, my boyfriend wants to get married but I don't feel ready yet.", topic: "Not feeling ready for marriage." },
+  { id: 310, tier: 3, s: "El mecánico me dijo que arreglar el carro va a costar como mil dólares, una locura.", e: "The mechanic told me fixing the car is going to cost like a thousand dollars, it's crazy.", topic: "A pricey car repair quote." },
+  { id: 311, tier: 3, s: "Mi tía vino de visita el mes pasado y se quedó casi tres semanas, no se quería ir.", e: "My aunt came to visit last month and stayed almost three weeks, she didn't want to leave.", topic: "An aunt overstaying her visit." },
+  { id: 312, tier: 3, s: "Estoy harta de mi trabajo, todos los días es lo mismo y encima no me pagan suficiente.", e: "I'm fed up with my job, every day is the same and on top of that they don't pay me enough.", topic: "Frustration with a low-paying repetitive job." },
+  { id: 313, tier: 3, s: "¿Te conté que vi a mi ex el otro día en el supermercado? Fue súper incómodo.", e: "Did I tell you I saw my ex the other day at the supermarket? It was super awkward.", topic: "An awkward run-in with an ex." },
+  { id: 314, tier: 3, s: "Mi mejor amiga se va a casar el próximo año y me pidió que sea su dama de honor.", e: "My best friend is getting married next year and asked me to be her maid of honor.", topic: "Being asked to be maid of honor." },
+  { id: 315, tier: 3, s: "No entiendo por qué siempre llegas tarde, te dije que la cita era a las siete en punto.", e: "I don't get why you're always late, I told you the appointment was at seven sharp.", topic: "Confronting someone for being late." },
+  { id: 316, tier: 3, s: "Cada vez que llueve fuerte mi techo gotea, ya le dije al casero pero no ha hecho nada.", e: "Every time it rains hard my roof leaks, I already told the landlord but he hasn't done anything.", topic: "A leaky roof and an unresponsive landlord." },
+  { id: 317, tier: 3, s: "Mi hermana acaba de tener bebé y no duerme nada, está agotada toda la semana.", e: "My sister just had a baby and isn't sleeping at all, she's exhausted all week.", topic: "An exhausted new mom." },
+  { id: 318, tier: 3, s: "Decidí dejar las redes sociales por un mes a ver si me siento un poco mejor mentalmente.", e: "I decided to quit social media for a month to see if I feel a little better mentally.", topic: "Taking a break from social media for mental health." },
+  { id: 319, tier: 3, s: "El profesor de matemáticas explica todo demasiado rápido y la verdad no entiendo casi nada.", e: "The math professor explains everything too fast and honestly I barely understand anything.", topic: "A math teacher who goes too fast." },
+  { id: 320, tier: 3, s: "Estamos buscando apartamento pero todo está carísimo en esta zona de la ciudad.", e: "We're looking for an apartment but everything is super expensive in this part of the city.", topic: "Apartment hunting in an expensive area." },
+  { id: 321, tier: 3, s: "Mi papá no aprueba que esté saliendo con él porque dice que es mucho mayor que yo.", e: "My dad doesn't approve of me dating him because he says he's much older than me.", topic: "A father disapproving of an age-gap relationship." },
+  { id: 322, tier: 3, s: "Anoche soñé que estaba volando sobre el océano, fue uno de los sueños más vívidos.", e: "Last night I dreamed I was flying over the ocean, it was one of the most vivid dreams.", topic: "A vivid flying dream." },
+  { id: 323, tier: 3, s: "Si sigues comiendo así de mal, te vas a enfermar, te lo digo en serio.", e: "If you keep eating that badly, you're going to get sick, I'm telling you seriously.", topic: "Warning a friend about their bad diet." },
+  { id: 324, tier: 3, s: "Mi compañera de cuarto deja la cocina hecha un desastre y nunca limpia nada.", e: "My roommate leaves the kitchen a total mess and never cleans anything.", topic: "A messy roommate." },
+  { id: 325, tier: 3, s: "Tengo una entrevista de trabajo el martes y estoy nerviosísima, no he podido dormir.", e: "I have a job interview Tuesday and I'm super nervous, I haven't been able to sleep.", topic: "Nerves before a job interview." },
+
+  // TIER 4 - Advanced
+  { id: 401, tier: 4, s: "La chica con la que estaba hablando me dijo que las uñas postizas le complican muchísimo el trabajo, porque tiene que doblar ropa y mover cajas todo el día, y no quiere que se le rompan porque arreglarlas le sale carísimo.", e: "The girl I was talking to told me her fake nails make her job really hard, because she has to fold clothes and move boxes all day, and she doesn't want them to break because getting them fixed is super expensive.", topic: "A girl complaining her fake nails get in the way of her retail job." },
+  { id: 402, tier: 4, s: "Mi hijo mayor está en la prepa pero es bien flojo, las calificaciones le valen y solo le importa salir con sus amigos y andar de noviero, mientras que el chiquito es todo lo contrario, súper estudioso pero medio raro.", e: "My oldest is in high school but he's really lazy, he doesn't care about his grades and only cares about hanging out with friends and chasing girls, while the youngest is the opposite, super studious but kind of weird.", topic: "Comparing two kids — a lazy older one and a studious younger one." },
+  { id: 403, tier: 4, s: "La verdad no sé qué onda con mi cuñada, cada vez que viene a la casa se mete en todo, opina de cómo cocino, de cómo educo a los niños, y mi esposo nunca le dice nada.", e: "Honestly I don't know what's up with my sister-in-law, every time she comes over she meddles in everything, has opinions on how I cook, how I raise the kids, and my husband never says anything.", topic: "An overbearing sister-in-law and a passive husband." },
+  { id: 404, tier: 4, s: "Estuvimos como dos horas atorados en el aeropuerto porque cancelaron el vuelo por mal tiempo, y para colmo perdieron una de mis maletas, justamente la que tenía la ropa para la boda.", e: "We were stuck at the airport for like two hours because they cancelled the flight due to bad weather, and on top of it they lost one of my suitcases, exactly the one with the clothes for the wedding.", topic: "A nightmare airport experience before a wedding." },
+  { id: 405, tier: 4, s: "Cuando le dije a mi mamá que iba a dejar el trabajo para empezar mi propio negocio, casi le da un infarto, me empezó a decir que estaba loca, que cómo iba a tirar diez años de carrera.", e: "When I told my mom I was going to quit my job to start my own business, she almost had a heart attack, she started telling me I was crazy, that how could I throw away ten years of my career.", topic: "Telling mom you're quitting a stable job to start a business." },
+  { id: 406, tier: 4, s: "Fui al doctor porque llevaba semanas con dolor de espalda, y resulta que después de tres radiografías y un montón de exámenes, me dijo que era estrés y que tenía que hacer yoga o algo así.", e: "I went to the doctor because I'd had back pain for weeks, and it turns out after three X-rays and a bunch of tests, he told me it was stress and that I had to do yoga or something.", topic: "Going through tests just to be told back pain is stress." },
+  { id: 407, tier: 4, s: "Mi vecino del piso de arriba pone música a todo volumen hasta las tres de la mañana, ya hablé con él como cinco veces, llamé a la policía dos veces, y nada, sigue igual.", e: "My upstairs neighbor blasts music until three in the morning, I've talked to him like five times, called the police twice, and nothing, he's still the same.", topic: "A neighbor who won't stop blasting late-night music." },
+  { id: 408, tier: 4, s: "La cosa con mi hermano es que siempre que necesita dinero aparece, pero cuando uno lo necesita ni el teléfono contesta, y mis papás siempre lo defienden porque es el menor.", e: "The thing with my brother is that whenever he needs money he shows up, but when you need him he doesn't even pick up the phone, and my parents always defend him because he's the youngest.", topic: "A brother who only shows up when he needs money." },
+  { id: 409, tier: 4, s: "Mi compañera del trabajo se tomó tres semanas de vacaciones y me dejó todos sus pendientes a mí sin avisarme, cuando regresó actuó como si nada hubiera pasado.", e: "My coworker took three weeks of vacation and dumped all her unfinished work on me without telling me, when she came back she acted like nothing had happened.", topic: "A coworker dumping her work on you while on vacation." },
+  { id: 410, tier: 4, s: "Llevo como cuatro meses tratando de bajar de peso y no he bajado ni un kilo, hago ejercicio cinco veces a la semana, como ensaladas, ya no sé qué más hacer.", e: "I've been trying to lose weight for like four months and haven't lost a single kilo, I exercise five times a week, I eat salads, I don't know what else to do.", topic: "Frustration over a weight loss plateau despite effort." },
+  { id: 411, tier: 4, s: "Mi hija de quince años me dijo que quería hacerse un tatuaje, le dije que ni de broma, y ahora está enojadísima conmigo, no me habla y se la pasa encerrada en el cuarto.", e: "My fifteen-year-old daughter told me she wanted to get a tattoo, I told her no way, and now she's super mad at me, she won't talk to me and stays locked in her room all day.", topic: "A teenage daughter wanting a tattoo and getting refused." },
+  { id: 412, tier: 4, s: "Después de tantos años trabajando en la misma empresa, finalmente me dieron el ascenso, pero ahora resulta que el sueldo casi no aumentó y la responsabilidad sí, el doble.", e: "After so many years working at the same company, they finally gave me the promotion, but now it turns out the pay barely went up and the responsibility did, double.", topic: "A promotion that's mostly more work without more pay." },
+  { id: 413, tier: 4, s: "Mi prima se está divorciando porque descubrió que el esposo le había sido infiel desde el principio, y lo peor es que la otra mujer es una amiga de la familia.", e: "My cousin is getting divorced because she found out her husband had been cheating on her from the start, and the worst part is the other woman is a family friend.", topic: "A cousin's divorce after long-term cheating with a family friend." },
+  { id: 414, tier: 4, s: "Anoche fui a una cita a ciegas que me organizó mi amiga, y el tipo era completamente diferente a la foto, llegó tarde, no se bañó, habló de su ex toda la noche.", e: "Last night I went on a blind date my friend set up, and the guy was completely different from the photo, he showed up late, didn't shower, talked about his ex all night.", topic: "A disastrous blind date." },
+  { id: 415, tier: 4, s: "Mi abuela tiene noventa y dos años y sigue manejando su carro, va sola al mercado, cocina para toda la familia los domingos, y se la pasa diciéndonos que no la traten como vieja.", e: "My grandma is ninety-two and still drives her car, goes to the market alone, cooks for the whole family on Sundays, and keeps telling us not to treat her like an old lady.", topic: "An incredibly independent ninety-two-year-old grandma." },
+  { id: 416, tier: 4, s: "Llevamos meses ahorrando para irnos de viaje a Europa, pero entre la renta, las cuentas y los gastos del bebé, parece que nunca vamos a juntar suficiente.", e: "We've been saving for months to take a trip to Europe, but between rent, bills, and the baby's expenses, it seems we'll never save enough.", topic: "Trying to save for a Europe trip with a baby and bills." },
+  { id: 417, tier: 4, s: "Mi hermano se metió en problemas en la universidad porque copió en un examen, lo van a expulsar por un semestre, y mis papás están devastados porque ya habían pagado la colegiatura.", e: "My brother got in trouble at the university because he cheated on an exam, they're going to suspend him for a semester, and my parents are devastated because they'd already paid the tuition.", topic: "A brother caught cheating after parents paid tuition." },
+  { id: 418, tier: 4, s: "Lo que más me molesta de mi novio es que cuando peleamos, en vez de hablar, se queda callado por horas, a veces días, y yo termino disculpándome aunque la culpa no sea mía.", e: "What bothers me most about my boyfriend is that when we fight, instead of talking, he goes silent for hours, sometimes days, and I end up apologizing even when it isn't my fault.", topic: "A boyfriend who gives the silent treatment after fights." },
+  { id: 419, tier: 4, s: "Mi tío se ganó la lotería hace como diez años y se gastó todo el dinero en menos de dos años, ahora vive con mi abuela porque no tiene dónde caerse muerto.", e: "My uncle won the lottery about ten years ago and spent all the money in less than two years, now he lives with my grandma because he's flat broke.", topic: "An uncle who blew his lottery winnings in two years." },
+  { id: 420, tier: 4, s: "Mi suegra vino a quedarse \"una semana\" según ella, pero ya llevamos un mes con ella en la casa y no da señales de irse, mi esposo no quiere decirle nada.", e: "My mother-in-law came to stay 'a week' according to her, but it's already been a month with her in the house and she shows no signs of leaving, my husband won't say anything.", topic: "A mother-in-law overstaying her one-week visit." },
+  { id: 421, tier: 4, s: "Cuando me casé pensé que iba a ser para toda la vida, pero después de cinco años me di cuenta de que ya no éramos las mismas personas, los dos habíamos cambiado.", e: "When I got married I thought it would be for life, but after five years I realized we weren't the same people anymore, we'd both changed.", topic: "Realizing five years into marriage that you've grown apart." },
+  { id: 422, tier: 4, s: "Mi mejor amigo me debe como dos mil dólares desde hace años, cada vez que le pregunto me dice que la próxima semana me paga, y la próxima semana nunca llega.", e: "My best friend has owed me about two thousand dollars for years, every time I ask he says he'll pay me next week, and next week never comes.", topic: "A best friend dodging a years-old debt." },
+  { id: 423, tier: 4, s: "Cuando llegamos al restaurante había una espera de dos horas porque no habíamos hecho reservación, y mi esposo se puso de un humor insoportable.", e: "When we got to the restaurant there was a two-hour wait because we hadn't made a reservation, and my husband got into an unbearable mood.", topic: "A husband's bad mood over a long restaurant wait." },
+  { id: 424, tier: 4, s: "La maestra de mi hijo me llamó para decirme que se está portando mal en clase, no hace tarea, contesta mal, y le pega a los compañeros, no sé qué le pasa.", e: "My son's teacher called to tell me he's been misbehaving in class, doesn't do homework, talks back, and hits his classmates, I don't know what's going on with him.", topic: "A call from school about a son acting out." },
+  { id: 425, tier: 4, s: "Mi vecina se la pasa metida en mi vida, me pregunta a qué hora llego, con quién salgo, y luego le va con el chisme a todo el edificio.", e: "My neighbor is constantly all up in my business, asks me what time I get home, who I go out with, and then spreads the gossip to the whole building.", topic: "A nosy neighbor who gossips to the whole building." },
+
+  // TIER 5 - Expert
+  { id: 501, tier: 5, s: "Híjole, ya no sé qué onda con mi compa, antes éramos súper unidos, hablábamos todos los días, y de un tiempo para acá ya ni el saludo me da, será que se le subió lo creído desde que le va bien en el trabajo.", e: "Man, I don't know what's up with my buddy, we used to be super tight, talked every day, and lately he doesn't even say hi, maybe he's gotten cocky since work has been going well for him.", topic: "A close friend who's gotten cocky and distant since his career took off." },
+  { id: 502, tier: 5, s: "La neta es que me cae súper mal cuando la gente llega tarde y ni se disculpa, como si mi tiempo no valiera nada, el otro día quedamos a las siete y la tipa llegó casi a las nueve.", e: "Honestly it really bothers me when people show up late and don't even apologize, like my time is worthless, the other day we agreed on seven and the girl rolled in almost at nine.", topic: "Frustration over a friend showing up two hours late with no apology." },
+  { id: 503, tier: 5, s: "Te juro que cuando vi a mi ex con la nueva, casi me da un patatús, él juraba que no estaba listo para una relación, y resulta que conmigo no estaba listo, con ella sí, qué descarado.", e: "I swear when I saw my ex with his new girl I almost had a fit, he swore up and down he wasn't ready for a relationship, turns out he wasn't ready with me, with her he was, what a nerve.", topic: "Catching an ex with a new partner after he claimed he wasn't ready to date." },
+  { id: 504, tier: 5, s: "Mi jefe es del tipo que te exige que estés conectado las veinticuatro horas, te manda mensajes a las once de la noche y se enoja si no respondes, pero cuando uno necesita un día por enfermedad ahí sí te dice que la empresa primero.", e: "My boss is the type that demands you be available twenty-four hours, sends you messages at eleven at night and gets mad if you don't reply, but when you need a sick day, then he tells you the company comes first.", topic: "A hypocritical boss who demands constant availability but won't grant sick days." },
+  { id: 505, tier: 5, s: "Me trae cortita la suegra, no le parece nada de lo que hago, que si la casa está sucia, que si no cocino bien, y yo bien tranquila aguantándola porque mi esposo me pidió que no le faltara el respeto.", e: "My mother-in-law has me on a tight leash, nothing I do pleases her, the house is dirty, I don't cook well, and I'm staying calm putting up with her because my husband asked me not to disrespect her.", topic: "A wife biting her tongue with a critical mother-in-law for her husband's sake." },
+  { id: 506, tier: 5, s: "La cosa con mi hermana siempre ha sido complicada, desde chiquitas competíamos por todo, y ya de adultas seguimos igual, cualquier logro mío ella lo tiene que opacar con uno suyo.", e: "Things with my sister have always been complicated, since we were little we competed over everything, and as adults we're still the same, any achievement of mine she has to overshadow with one of her own.", topic: "A lifelong rivalry with a sister who has to one-up every achievement." },
+  { id: 507, tier: 5, s: "Resulta que el chavo con el que llevaba tres meses saliendo tenía novia en otra ciudad, me enteré porque su amiga me etiquetó en una foto y la novia apareció en los comentarios preguntando quién era yo.", e: "Turns out the guy I'd been dating for three months had a girlfriend in another city, I found out because his friend tagged me in a photo and the girlfriend showed up in the comments asking who I was.", topic: "Finding out via social media that a boyfriend had another girlfriend in another city." },
+  { id: 508, tier: 5, s: "Estoy hasta el copete del trabajo, llevo seis meses haciendo el trabajo de tres personas porque mi jefe no quiere contratar a nadie más, pero a él sí le alcanzó para comprarse un carro nuevo el mes pasado.", e: "I'm fed up with work, I've been doing the work of three people for six months because my boss won't hire anyone else, but he had enough to buy himself a new car last month.", topic: "Doing the workload of three people while the boss buys himself a new car." },
+  { id: 509, tier: 5, s: "Mi compadre se metió en un negocio raro de criptomonedas, le metió todos sus ahorros, hipotecó la casa, y obviamente lo perdió todo, ahora la esposa lo dejó porque ya no aguantó.", e: "My buddy got into some sketchy crypto deal, threw in all his savings, mortgaged the house, and obviously lost it all, now his wife left him because she couldn't take it anymore.", topic: "A friend who lost everything in a sketchy crypto investment and his wife left him." },
+  { id: 510, tier: 5, s: "La verdad ya estoy chocho de tantos políticos prometiendo lo mismo en cada elección, todos juran que van a cambiar las cosas, y al final llegan al puesto y se olvidan de la gente.", e: "Honestly I'm sick and tired of so many politicians promising the same thing every election, they all swear they'll change things, and in the end they get into office and forget about the people.", topic: "Cynicism about politicians who break their campaign promises." },
+  { id: 511, tier: 5, s: "Mi mamá tiene esa costumbre bien fea de comparar a los hijos, siempre saca a relucir lo bien que le va a mi hermano, y ni siquiera se da cuenta de cómo me afecta.", e: "My mom has that really ugly habit of comparing her kids, she always brings up how well my brother is doing, and she doesn't even realize how it affects me.", topic: "A mom who unfavorably compares her kids without realizing the harm." },
+  { id: 512, tier: 5, s: "Te platico que el otro día me topé con un compa de la prepa que tenía como quince años sin ver, y la mitad de las cosas que él contaba yo ni me acordaba, parece que cada quien guarda una versión diferente.", e: "Let me tell you, the other day I ran into a buddy from high school I hadn't seen in like fifteen years, and half the stuff he was telling me I didn't even remember, seems like each of us keeps a different version.", topic: "Bumping into an old high school friend who remembered things differently." },
+  { id: 513, tier: 5, s: "Mi tía la chismosa ya regó por toda la familia que mi prima está embarazada, cuando ella todavía no se lo quería decir a nadie hasta tener los tres meses cumplidos.", e: "My gossipy aunt already spread it to the whole family that my cousin is pregnant, when she didn't want to tell anyone until she'd hit three months.", topic: "A gossipy aunt blowing up a cousin's pregnancy news too early." },
+  { id: 514, tier: 5, s: "Andamos buscando casa por la zona pero los precios están por las nubes, lo que antes costaba cien mil ahora vale el doble, y los bancos no quieren prestar a menos que tengas un sueldazo.", e: "We're house-hunting around the area but prices are sky-high, what used to cost a hundred grand now costs double, and banks won't lend unless you've got a huge salary.", topic: "House hunting frustrations with sky-high prices and tight lending." },
+  { id: 515, tier: 5, s: "Mi cuñado se la pasa criticando cómo educo a mis hijos, y resulta que sus hijos son los más malcriados que he visto en mi vida, no respetan a nadie y él ni se da cuenta.", e: "My brother-in-law is constantly criticizing how I raise my kids, and it turns out his kids are the most spoiled I've seen in my life, they don't respect anyone and he doesn't even notice.", topic: "A judgmental brother-in-law whose own kids are out of control." },
+  { id: 516, tier: 5, s: "La cosa se puso fea en la fiesta porque mi primo llegó ya tomado y empezó a sacar trapitos al sol de cosas que pasaron hace años en la familia, mi tía terminó llorando.", e: "Things got ugly at the party because my cousin showed up already drunk and started airing dirty laundry from years ago in the family, my aunt ended up crying.", topic: "A drunk cousin airing family secrets and ruining a party." },
+  { id: 517, tier: 5, s: "Después de años aguantando a mi marido, finalmente le pedí el divorcio, y ahora actúa como si yo le hubiera roto el corazón, cuando él fue el que se la pasaba mintiendo.", e: "After years of putting up with my husband, I finally asked him for a divorce, and now he's acting like I broke his heart, when he was the one constantly lying.", topic: "A wife who finally asked for divorce after years of her husband's lies." },
+  { id: 518, tier: 5, s: "Mi vecina del piso de abajo se queja de cualquier ruidito, los niños no pueden ni correr, pero ella tiene tres perros que ladran toda la noche y eso parece que sí está bien.", e: "My downstairs neighbor complains about every little noise, the kids can't even run, but she has three dogs that bark all night and that apparently is fine.", topic: "A double-standard neighbor who hates kid noise but lets her dogs bark all night." },
+  { id: 519, tier: 5, s: "La onda con la nueva chamba es que me pagan menos pero el ambiente es mucho mejor, en mi trabajo anterior me la vivía estresada, llorando en el baño, ahora gano menos pero tengo paz mental.", e: "The thing with the new gig is they pay me less but the environment is much better, at my old job I was constantly stressed, crying in the bathroom, now I earn less but I have peace of mind.", topic: "Trading a higher-paying toxic job for lower pay and peace of mind." },
+  { id: 520, tier: 5, s: "Mi sobrino se metió en un grupito de amigos medio raros y de la noche a la mañana cambió completamente, mi hermana siente que está perdiendo a su hijo y no sabe qué hacer.", e: "My nephew got into a strange little group of friends and overnight he completely changed, my sister feels like she's losing her son and doesn't know what to do.", topic: "A nephew falling in with the wrong crowd and his mom feeling helpless." },
+  { id: 521, tier: 5, s: "Llevo años luchando con problemas de ansiedad y la terapia me ha ayudado un montón, pero en mi familia todavía es tabú hablar de salud mental, mi mamá dice que son cosas modernas.", e: "I've been struggling with anxiety for years and therapy has helped me a ton, but in my family it's still taboo to talk about mental health, my mom says it's a modern thing.", topic: "Battling anxiety while family still treats mental health as taboo." },
+  { id: 522, tier: 5, s: "Mi compadre y su esposa estaban planeando un viaje carísimo a Japón, y a tres semanas del viaje a ella le diagnosticaron una enfermedad seria y tuvieron que cancelar todo.", e: "My buddy and his wife were planning a really expensive trip to Japan, and three weeks before the trip she got diagnosed with a serious illness and they had to cancel everything.", topic: "A long-saved Japan trip cancelled by a sudden serious illness." },
+  { id: 523, tier: 5, s: "La gente joven ya no quiere casarse ni tener hijos, y la verdad no los culpo, con cómo está la economía, los precios de la renta, lo caro que es criar un niño.", e: "Young people don't want to get married or have kids anymore, and honestly I don't blame them, with how the economy is, rent prices, how expensive it is to raise a kid.", topic: "Why younger generations are skipping marriage and kids." },
+  { id: 524, tier: 5, s: "Mi pareja y yo estamos en terapia desde hace seis meses porque después de la pandemia todo se desacomodó, peleábamos por cualquier tontería, y aunque ha sido difícil, nos ha ayudado a comunicarnos.", e: "My partner and I have been in therapy for six months because after the pandemic everything fell apart, we were fighting over anything stupid, and even though it's been hard, it's helped us communicate.", topic: "A couple in post-pandemic couples therapy slowly learning to communicate." },
+  { id: 525, tier: 5, s: "Cuando murió mi abuela el año pasado, descubrimos un montón de secretos de la familia, resulta que tenía una hermana que nadie conocía porque se habían peleado hace cincuenta años.", e: "When my grandma died last year, we uncovered a bunch of family secrets, turns out she had a sister no one knew about because they'd had a falling out fifty years ago.", topic: "Discovering a long-lost great-aunt after grandma's death." }
+];
+
+const AUDIO_BASE_URL = "https://cdn.jsdelivr.net/gh/remoandfriends/spanish-trainer-audio@main";
+
+/* ===== Scoring ===== */
+function normalizeSpanish(str) {
+  return (str || "").toLowerCase().replace(/[¿?¡!.,;:"]/g, "").replace(/\s+/g, " ").trim();
+}
+function levenshtein(a, b) {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  const dp = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
+  for (let i = 0; i <= a.length; i++) dp[i][0] = i;
+  for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(dp[i-1][j]+1, dp[i][j-1]+1, dp[i-1][j-1]+cost);
+    }
+  }
+  return dp[a.length][b.length];
+}
+function gradeSpanish(userInput, target) {
+  const u = normalizeSpanish(userInput), t = normalizeSpanish(target);
+  if (!u) return 0;
+  if (u === t) return 100;
+  const dist = levenshtein(u, t);
+  return Math.max(0, Math.round((1 - dist / Math.max(u.length, t.length)) * 100));
+}
+const STOPWORDS = new Set(["the","a","an","is","are","was","were","to","of","in","on","at","and","or","but","i","you","he","she","it","we","they","my","your","his","her","our","their","this","that","do","does","did","have","has","had","be","been","for","with","as","so"]);
+function gradeEnglish(userInput, reference) {
+  if (!userInput || !userInput.trim()) return { score: 0, feedback: "No translation provided." };
+  const tokenize = (s) => (s || "").toLowerCase().replace(/[^\w\s']/g, " ").split(/\s+/).filter(Boolean);
+  const u = new Set(tokenize(userInput).filter(w => !STOPWORDS.has(w)));
+  const r = tokenize(reference).filter(w => !STOPWORDS.has(w));
+  if (!r.length || !u.size) return { score: 0, feedback: "Empty input." };
+  let hits = 0;
+  for (const w of r) if (u.has(w)) hits++;
+  const score = Math.round((hits / r.length) * 100);
+  return { score, feedback: score >= 70 ? "Good keyword match" : "Some key meaning words missing" };
+}
+
+/* ===== UI helpers ===== */
+function scoreColor(p) {
+  if (p >= 70) return "#2F7D3F";
+  if (p >= 50) return "#1F4E8C";
+  if (p >= 30) return "#5A2E7A";
+  if (p >= 15) return "#B25A0E";
+  return "#A02020";
+}
+function motivationalMessage(combined, sp, en) {
+  if (combined === 100) return "¡Perfecto! Native-speaker level on this one. 🔥";
+  if (combined >= 90)  return "Crushed it. Tiny imperfections at most — that's elite work.";
+  if (combined >= 80)  return "Strong. You understood it cleanly and translated naturally.";
+  if (combined >= 70)  return "Solid! You got the meaning and most of the words. Onward.";
+  if (combined >= 60) {
+    if (sp >= en + 15) return `Sooooo close! Spanish is tight (${sp}%), English needs another pass.`;
+    if (en >= sp + 15) return `Sooooo close! Meaning is clicking (${en}%), but Spanish transcription has gaps.`;
+    return "Sooooo close! You're almost there.";
+  }
+  if (combined >= 50)  return "Halfway there. Listen again with fresh ears.";
+  if (combined >= 30)  return "You caught fragments but missed the big picture. Try the slow-tempo hint.";
+  if (combined >= 15)  return "Rough one. Don't sweat it — natives talk fast. Use both hints and try again.";
+  if (combined > 0)    return "Geez, way off. Keep at it, you'll need more reps.";
+  return "Did you press play? 😅 No worries, dust off and retry.";
+}
+
+const TIER_NAMES = [
+  { name: "Primer Paso", sub: "Beginner", desc: "Everyday phrases, short and simple." },
+  { name: "Calle Suave", sub: "Easy-Intermediate", desc: "Quick conversational lines." },
+  { name: "En la Plática", sub: "Intermediate", desc: "Real opinions, multi-clause." },
+  { name: "Vida Real", sub: "Advanced", desc: "Long real-life narratives, fast pace." },
+  { name: "Como Nativo", sub: "Expert", desc: "Slang, regionalisms, complex stories." }
+];
+
+/* ===== Progress (localStorage) ===== */
+function useProgress() {
+  const [progress, setProgress] = useState({ passedIds: [], maxTier: 1 });
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("spanish_trainer_progress");
+      if (raw) {
+        const v = JSON.parse(raw);
+        setProgress({ passedIds: v.passedIds || [], maxTier: v.maxTier || 1 });
+      }
+    } catch (_) {}
+    setLoaded(true);
+  }, []);
+
+  const markPassed = useCallback((phraseId, tier) => {
+    setProgress(prev => {
+      const passedIds = prev.passedIds.includes(phraseId) ? prev.passedIds : [...prev.passedIds, phraseId];
+      const tierIds = PHRASES.filter(p => p.tier === tier).map(p => p.id);
+      const allPassed = tierIds.every(id => passedIds.includes(id));
+      const maxTier = allPassed ? Math.max(prev.maxTier, tier + 1) : prev.maxTier;
+      const next = { passedIds, maxTier: Math.min(maxTier, 5) };
+      try { localStorage.setItem("spanish_trainer_progress", JSON.stringify(next)); } catch (_) {}
+      return next;
+    });
+  }, []);
+
+  const reset = useCallback(() => {
+    setProgress({ passedIds: [], maxTier: 1 });
+    try { localStorage.removeItem("spanish_trainer_progress"); } catch (_) {}
+  }, []);
+
+  return { progress, loaded, markPassed, reset };
+}
+
+/* ===== Audio (direct <audio> works in normal browser, no iframe restrictions) ===== */
+function useSpeech(phraseId) {
+  const audioRef = useRef(null);
+  const [status, setStatus] = useState("idle");
+  const url = `${AUDIO_BASE_URL}/${phraseId}.mp3`;
+
+  useEffect(() => {
+    setStatus("idle");
+  }, [phraseId]);
+
+  const speak = useCallback((opts = {}) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+    audio.playbackRate = opts.slow ? 0.6 : 1.0;
+    setStatus("loading");
+    audio.play().then(() => setStatus("playing")).catch(err => {
+      console.error("Play failed:", err);
+      setStatus("error");
+    });
+  }, []);
+
+  const stop = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    setStatus("idle");
+  }, []);
+
+  const audioElement = (
+    <audio
+      ref={audioRef}
+      src={url}
+      preload="auto"
+      onEnded={() => setStatus("idle")}
+      onError={() => setStatus("error")}
+      style={{ display: "none" }}
+    />
+  );
+
+  return { speak, stop, status, audioElement };
+}
+
+/* ===== Accent bar ===== */
+const ACCENT_KEYS = ["á","é","í","ó","ú","ü","ñ","Á","É","Í","Ó","Ú","Ñ","¿","?","¡","!"];
+function AccentBar({ targetRef, value, onChange }) {
+  const insert = (ch) => {
+    const el = targetRef.current;
+    if (!el) { onChange((value || "") + ch); return; }
+    const start = el.selectionStart ?? value.length;
+    const end = el.selectionEnd ?? value.length;
+    const next = (value || "").slice(0, start) + ch + (value || "").slice(end);
+    onChange(next);
+    requestAnimationFrame(() => {
+      el.focus();
+      el.selectionStart = el.selectionEnd = start + ch.length;
+    });
+  };
+  return (
+    <div className="flex flex-wrap gap-1.5 mt-2">
+      {ACCENT_KEYS.map(k => (
+        <button key={k} type="button" onClick={() => insert(k)}
+          className="px-2.5 py-1 rounded-md text-sm border transition"
+          style={{ background: "#FAF5EC", borderColor: "#1A1814", color: "#1A1814", fontFamily: "'Fraunces', serif", fontWeight: 500 }}>
+          {k}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ===== Landing ===== */
+function LandingPage({ progress, onSelectTier, timerMode, setTimerMode, onReset }) {
+  return (
+    <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className="mb-10">
+        <div className="text-xs uppercase tracking-[0.2em] mb-2" style={{ color: "#807466" }}>Spanish Listening Trainer</div>
+        <h1 className="text-5xl md:text-6xl leading-[0.95] mb-3" style={{ fontFamily: "'Fraunces', serif", fontWeight: 500, fontStyle: "italic", color: "#1A1814" }}>
+          Train your <span style={{ color: "#C8553D" }}>ears</span>,<br />not just your eyes.
+        </h1>
+        <p className="text-lg max-w-xl" style={{ color: "#3a342d" }}>
+          Press play. Transcribe what you hear in Spanish. Translate it to English. Beat 70% to unlock the next phrase.
+        </p>
+      </div>
+      <div className="mb-8 p-4 rounded-lg" style={{ background: "#F2EADA", border: "1px solid #1A1814" }}>
+        <div className="text-sm mb-3" style={{ color: "#1A1814" }}><strong>Timer mode</strong> — pick your difficulty</div>
+        <div className="flex gap-2">
+          {[{v:300,label:"5 minutes",sub:"easier"},{v:120,label:"2 minutes",sub:"harder"}].map(o => (
+            <button key={o.v} onClick={() => setTimerMode(o.v)} className="flex-1 px-4 py-3 rounded-md text-left transition"
+              style={{ background: timerMode === o.v ? "#1A1814" : "transparent", color: timerMode === o.v ? "#FAF5EC" : "#1A1814", border: "1px solid #1A1814" }}>
+              <div className="font-semibold">{o.label}</div>
+              <div className="text-xs opacity-70">{o.sub}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="space-y-3">
+        {TIER_NAMES.map((t, i) => {
+          const tier = i + 1;
+          const unlocked = tier <= progress.maxTier;
+          const tierPhrases = PHRASES.filter(p => p.tier === tier);
+          const passedInTier = tierPhrases.filter(p => progress.passedIds.includes(p.id)).length;
+          const pct = Math.round((passedInTier / tierPhrases.length) * 100);
+          return (
+            <button key={tier} disabled={!unlocked} onClick={() => unlocked && onSelectTier(tier)}
+              className="w-full text-left p-5 rounded-lg transition relative overflow-hidden"
+              style={{ background: unlocked ? "#FAF5EC" : "#E8E2D3", border: `2px solid ${unlocked ? "#1A1814" : "#9E978A"}`, color: unlocked ? "#1A1814" : "#9E978A", cursor: unlocked ? "pointer" : "not-allowed", opacity: unlocked ? 1 : 0.7 }}>
+              <div className="flex items-baseline justify-between mb-1">
+                <div className="flex items-baseline gap-3">
+                  <span className="text-xs tabular-nums" style={{ color: "#807466" }}>Tier 0{tier}</span>
+                  <h3 className="text-2xl md:text-3xl" style={{ fontFamily: "'Fraunces', serif", fontWeight: 500 }}>{t.name}</h3>
+                  <span className="text-xs italic" style={{ color: "#807466", fontFamily: "'Fraunces', serif" }}>{t.sub}</span>
+                </div>
+                {!unlocked && <span className="text-xs px-2 py-1 rounded" style={{ background: "#1A1814", color: "#FAF5EC" }}>LOCKED</span>}
+              </div>
+              <div className="text-sm mb-3">{t.desc}</div>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-1.5 rounded-full" style={{ background: "#E8E2D3" }}>
+                  <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: unlocked ? "#C8553D" : "#9E978A" }} />
+                </div>
+                <div className="text-xs tabular-nums" style={{ color: "#807466" }}>{passedInTier}/{tierPhrases.length}</div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+      <div className="mt-8 text-center">
+        <button onClick={() => { if (confirm("Reset all progress?")) onReset(); }}
+          className="text-xs underline opacity-50 hover:opacity-100" style={{ color: "#1A1814" }}>
+          Reset all progress
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ===== Phrase picker ===== */
+function PhrasePicker({ tier, progress, onPickPhrase, onBack }) {
+  const tierPhrases = PHRASES.filter(p => p.tier === tier);
+  const passedSet = new Set(progress.passedIds);
+  let firstUnpassedIdx = tierPhrases.findIndex(p => !passedSet.has(p.id));
+  if (firstUnpassedIdx === -1) firstUnpassedIdx = tierPhrases.length - 1;
+  return (
+    <div className="max-w-3xl mx-auto px-6 py-8">
+      <button onClick={onBack} className="text-xs uppercase tracking-[0.2em] mb-4 hover:opacity-60" style={{ color: "#807466" }}>← All tiers</button>
+      <h2 className="text-4xl md:text-5xl mb-1" style={{ fontFamily: "'Fraunces', serif", fontWeight: 500, fontStyle: "italic", color: "#1A1814" }}>{TIER_NAMES[tier-1].name}</h2>
+      <div className="text-sm mb-8" style={{ color: "#807466" }}>Tier 0{tier} · {TIER_NAMES[tier-1].desc}</div>
+      <div className="grid grid-cols-5 gap-2">
+        {tierPhrases.map((p, i) => {
+          const passed = passedSet.has(p.id);
+          const unlocked = passed || i <= firstUnpassedIdx;
+          return (
+            <button key={p.id} disabled={!unlocked} onClick={() => unlocked && onPickPhrase(p)}
+              className="aspect-square rounded-md flex flex-col items-center justify-center transition"
+              style={{ background: passed ? "#2F7D3F" : unlocked ? "#FAF5EC" : "#E8E2D3", border: `2px solid ${passed ? "#2F7D3F" : unlocked ? "#1A1814" : "#9E978A"}`, color: passed ? "#FAF5EC" : unlocked ? "#1A1814" : "#9E978A", cursor: unlocked ? "pointer" : "not-allowed", opacity: unlocked ? 1 : 0.5 }}>
+              <div className="text-2xl tabular-nums" style={{ fontFamily: "'Fraunces', serif", fontWeight: 500 }}>{i + 1}</div>
+              {passed && <div className="text-xs">✓</div>}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ===== Phrase screen ===== */
+function PhraseScreen({ phrase, tier, indexInTier, totalInTier, timerLimit, onPass, onBack, onNext, hasNext }) {
+  const speech = useSpeech(phrase.id);
+  const spanishRef = useRef(null);
+  const [spanish, setSpanish] = useState("");
+  const [english, setEnglish] = useState("");
+  const [hint1Used, setHint1Used] = useState(false);
+  const [hint2Used, setHint2Used] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [result, setResult] = useState(null);
+  const [secondsLeft, setSecondsLeft] = useState(timerLimit);
+  const timerRef = useRef(null);
+
+  const reset = useCallback(() => {
+    setSpanish(""); setEnglish("");
+    setHint1Used(false); setHint2Used(false);
+    setSubmitted(false); setResult(null);
+    setSecondsLeft(timerLimit);
+  }, [timerLimit]);
+
+  useEffect(() => { reset(); }, [phrase.id, reset]);
+
+  useEffect(() => {
+    if (submitted) return;
+    timerRef.current = setInterval(() => {
+      setSecondsLeft(s => {
+        if (s <= 1) { clearInterval(timerRef.current); handleSubmit(true); return 0; }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timerRef.current);
+  }, [submitted, phrase.id]);
+
+  const handleSubmit = useCallback((autoDeducted = false) => {
+    if (submitted) return;
+    setSubmitted(true);
+    speech.stop();
+    if (timerRef.current) clearInterval(timerRef.current);
+    let sp = gradeSpanish(spanish, phrase.s);
+    const enResult = gradeEnglish(english, phrase.e);
+    let en = enResult.score;
+    if (autoDeducted) { sp = Math.max(0, sp - 10); en = Math.max(0, en - 10); }
+    const combined = Math.round((sp + en) / 2);
+    const passed = combined >= 70;
+    setResult({ sp, en, combined, enFeedback: enResult.feedback, autoDeducted, passed });
+    if (passed) onPass(phrase.id, tier);
+  }, [submitted, spanish, english, phrase, tier, speech, onPass]);
+
+  const mm = Math.floor(secondsLeft / 60);
+  const ss = secondsLeft % 60;
+  const timerColor = secondsLeft <= 30 ? "#C8553D" : "#1A1814";
+
+  return (
+    <div className="max-w-3xl mx-auto px-6 py-6">
+      <div className="flex items-center justify-between mb-6">
+        <button onClick={onBack} className="text-xs uppercase tracking-[0.2em] hover:opacity-60" style={{ color: "#807466" }}>← Phrase list</button>
+        <div className="flex items-center gap-4">
+          <div className="text-xs" style={{ color: "#807466" }}>Phrase {indexInTier+1} / {totalInTier}</div>
+          {!submitted && (
+            <div className="px-3 py-1 rounded text-sm tabular-nums" style={{ background: "#FAF5EC", border: `1px solid ${timerColor}`, color: timerColor, fontWeight: 600 }}>
+              {String(mm).padStart(2,"0")}:{String(ss).padStart(2,"0")}
+            </div>
+          )}
+        </div>
+      </div>
+      <h2 className="text-3xl md:text-4xl mb-1" style={{ fontFamily: "'Fraunces', serif", fontWeight: 500, fontStyle: "italic", color: "#1A1814" }}>
+        {TIER_NAMES[tier-1].name} · Phrase {indexInTier+1}
+      </h2>
+      <div className="text-sm mb-6" style={{ color: "#807466" }}>Listen, transcribe, translate. Replay as many times as you want.</div>
+      <div className="mb-6 p-6 rounded-lg flex flex-col items-center" style={{ background: "#1A1814", color: "#FAF5EC" }}>
+        {speech.audioElement}
+        <button onClick={() => speech.speak()} disabled={speech.status === "error"}
+          className="w-20 h-20 rounded-full flex items-center justify-center transition hover:scale-105"
+          style={{ background: "#C8553D", color: "#FAF5EC", opacity: speech.status === "error" ? 0.5 : 1 }} title="Play phrase">
+          {speech.status === "loading" ? (
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+              <circle cx="12" cy="12" r="9" strokeDasharray="40 60" strokeLinecap="round">
+                <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite" />
+              </circle>
+            </svg>
+          ) : speech.status === "playing" ? (
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" /><rect x="14" y="5" width="4" height="14" /></svg>
+          ) : (
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+          )}
+        </button>
+        <div className="mt-3 text-xs opacity-70">
+          {speech.status === "error" ? "Audio failed — check your internet connection" :
+           speech.status === "loading" ? "Loading audio…" :
+           speech.status === "playing" ? "Playing… (tap to restart)" :
+           "Tap to play · Native voice, real-life tempo"}
+        </div>
+      </div>
+      {!submitted && (
+        <div className="flex gap-2 mb-6">
+          <button disabled={hint1Used} onClick={() => setHint1Used(true)}
+            className="flex-1 px-3 py-2 rounded text-sm text-left transition"
+            style={{ background: hint1Used ? "#F2EADA" : "#FAF5EC", border: "1px solid #1A1814", color: "#1A1814", opacity: hint1Used ? 0.95 : 1 }}>
+            <div className="text-xs uppercase tracking-wider mb-0.5" style={{ color: "#807466" }}>Hint 1 · Topic</div>
+            <div>{hint1Used ? phrase.topic : "Reveal what the phrase is about"}</div>
+          </button>
+          <button disabled={hint2Used || speech.status === "error"}
+            onClick={() => { setHint2Used(true); speech.speak({ slow: true }); }}
+            className="flex-1 px-3 py-2 rounded text-sm text-left transition"
+            style={{ background: "#FAF5EC", border: "1px solid #1A1814", color: "#1A1814", opacity: hint2Used ? 0.6 : 1 }}>
+            <div className="text-xs uppercase tracking-wider mb-0.5" style={{ color: "#807466" }}>Hint 2 · Slow audio</div>
+            <div>{hint2Used ? "Played at slow tempo" : "Play once at slow speed"}</div>
+          </button>
+        </div>
+      )}
+      {!submitted && (
+        <div className="space-y-4 mb-6">
+          <div>
+            <label className="text-xs uppercase tracking-[0.2em] block mb-1" style={{ color: "#807466" }}>
+              Spanish transcription <span style={{ color: "#C8553D" }}>(strict — match exactly)</span>
+            </label>
+            <textarea ref={spanishRef} value={spanish} onChange={(e) => setSpanish(e.target.value)}
+              placeholder="Type what you hear, in Spanish..."
+              className="w-full p-3 rounded-md text-base"
+              style={{ background: "#FAF5EC", border: "1px solid #1A1814", color: "#1A1814", minHeight: "80px" }} />
+            <AccentBar targetRef={spanishRef} value={spanish} onChange={setSpanish} />
+          </div>
+          <div>
+            <label className="text-xs uppercase tracking-[0.2em] block mb-1" style={{ color: "#807466" }}>
+              English translation <span style={{ color: "#2F7D3F" }}>(meaning matters, exact words don't)</span>
+            </label>
+            <textarea value={english} onChange={(e) => setEnglish(e.target.value)}
+              placeholder="Translate the meaning into English..."
+              className="w-full p-3 rounded-md text-base"
+              style={{ background: "#FAF5EC", border: "1px solid #1A1814", color: "#1A1814", minHeight: "80px" }} />
+          </div>
+        </div>
+      )}
+      {!submitted && (
+        <button onClick={() => handleSubmit(false)} className="w-full py-4 rounded-md text-lg transition hover:opacity-90"
+          style={{ background: "#C8553D", color: "#FAF5EC", fontFamily: "'Fraunces', serif", fontWeight: 500, letterSpacing: "0.02em" }}>
+          Submit answers
+        </button>
+      )}
+      {submitted && result && (
+        <ResultsView phrase={phrase} result={result} userSpanish={spanish} userEnglish={english} onRetry={reset} onNext={onNext} hasNext={hasNext} />
+      )}
+    </div>
+  );
+}
+
+function ResultsView({ phrase, result, userSpanish, userEnglish, onRetry, onNext, hasNext }) {
+  const { sp, en, combined, enFeedback, autoDeducted, passed } = result;
+  return (
+    <div className="space-y-5">
+      {autoDeducted && (
+        <div className="p-3 rounded-md text-sm" style={{ background: "#FAE6E0", border: "1px solid #C8553D", color: "#7A2A18" }}>
+          Time ran out — 10 points deducted from each section.
+        </div>
+      )}
+      <div className="grid grid-cols-3 gap-3">
+        {[{label:"Spanish",val:sp},{label:"English",val:en},{label:"Combined",val:combined}].map(b => (
+          <div key={b.label} className="p-4 rounded-md text-center" style={{ background: "#FAF5EC", border: `2px solid ${scoreColor(b.val)}` }}>
+            <div className="text-xs uppercase tracking-wider mb-1" style={{ color: "#807466" }}>{b.label}</div>
+            <div className="text-4xl tabular-nums" style={{ color: scoreColor(b.val), fontFamily: "'Fraunces', serif", fontWeight: 600 }}>
+              {b.val}<span className="text-xl">%</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="p-4 rounded-md text-center" style={{ background: passed ? "#E8F1E5" : "#FAF5EC", border: `1px solid ${scoreColor(combined)}` }}>
+        <div className="text-base" style={{ fontFamily: "'Fraunces', serif", fontStyle: "italic", color: scoreColor(combined) }}>
+          {motivationalMessage(combined, sp, en)}
+        </div>
+        {enFeedback && <div className="text-xs mt-2" style={{ color: "#807466" }}>English feedback: {enFeedback}</div>}
+      </div>
+      {passed && (
+        <div className="p-4 rounded-md" style={{ background: "#1A1814", color: "#FAF5EC" }}>
+          <div className="text-xs uppercase tracking-[0.2em] mb-2 opacity-70">Correct answers</div>
+          <div className="mb-2" style={{ fontFamily: "'Fraunces', serif", fontStyle: "italic", fontSize: "1.1rem" }}>🇪🇸 {phrase.s}</div>
+          <div style={{ opacity: 0.85 }}>🇺🇸 {phrase.e}</div>
+        </div>
+      )}
+      <details className="text-sm" style={{ color: "#807466" }}>
+        <summary className="cursor-pointer">Your answers</summary>
+        <div className="mt-2 p-3 rounded" style={{ background: "#F2EADA", color: "#1A1814" }}>
+          <div className="mb-1"><strong>Your Spanish:</strong> {userSpanish || <em>(blank)</em>}</div>
+          <div><strong>Your English:</strong> {userEnglish || <em>(blank)</em>}</div>
+          {!passed && (
+            <div className="mt-3 pt-3 border-t" style={{ borderColor: "#1A1814" }}>
+              <div className="mb-1"><strong>Should have been (ES):</strong> {phrase.s}</div>
+              <div><strong>Reference (EN):</strong> {phrase.e}</div>
+            </div>
+          )}
+        </div>
+      </details>
+      <div className="flex gap-3">
+        <button onClick={onRetry} className="flex-1 py-3 rounded-md transition hover:opacity-90"
+          style={{ background: "transparent", border: "2px solid #1A1814", color: "#1A1814", fontFamily: "'Fraunces', serif", fontWeight: 500 }}>
+          {passed ? "Retry for 100%" : "Retry"}
+        </button>
+        {passed && hasNext && (
+          <button onClick={onNext} className="flex-1 py-3 rounded-md transition hover:opacity-90"
+            style={{ background: "#2F7D3F", color: "#FAF5EC", fontFamily: "'Fraunces', serif", fontWeight: 500 }}>
+            Next phrase →
+          </button>
+        )}
+        {passed && !hasNext && (
+          <button onClick={onNext} className="flex-1 py-3 rounded-md transition hover:opacity-90"
+            style={{ background: "#C99846", color: "#1A1814", fontFamily: "'Fraunces', serif", fontWeight: 500 }}>
+            🎉 Tier complete!
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================================
+   BRAND — Lingo Harmony wordmark on the left, custom LH monogram on the right.
+   The monogram is drawn as a single continuous flow: the L's stem rises into
+   a soft curve that becomes the H's crossbar — two letters joined like two
+   languages in conversation. Slight hand-drawn imperfection (no perfect
+   geometry) keeps it feeling literary rather than corporate.
+   ========================================================================= */
+function LingoHarmonyLogo({ size = 44 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-label="Lingo Harmony logo">
+      {/* Soft cream disc background with hand-drawn edge feel */}
+      <circle cx="32" cy="32" r="30" fill="#1A1814" />
+      <circle cx="32" cy="32" r="28" fill="none" stroke="#FAF5EC" strokeWidth="0.6" opacity="0.25" />
+
+      {/* The LH ligature — drawn with one main brushstroke + connector arc */}
+      <g stroke="#FAF5EC" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
+        {/* L vertical stem (slight rightward lean for handwriting feel) */}
+        <path d="M 18 16 Q 17.5 33, 18.5 47" />
+        {/* L base stroke */}
+        <path d="M 18.5 47 L 28 47" />
+
+        {/* H left vertical */}
+        <path d="M 36 17 Q 36.2 33, 36 49" />
+        {/* H right vertical */}
+        <path d="M 48 17 Q 48.2 33, 48 49" />
+      </g>
+
+      {/* The connecting "harmony" arc — clay red — links the L's tail to the H's crossbar */}
+      <path
+        d="M 28 47 Q 33 38, 36 32 L 48 32"
+        stroke="#C8553D"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+        fill="none"
+      />
+
+      {/* Small accent dot — a tilde / breath mark above, hinting at Spanish diacritics */}
+      <path d="M 22 11 Q 25 9.5, 28 11" stroke="#C8553D" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+    </svg>
+  );
+}
+
+function BrandBar({ onHomeClick }) {
+  return (
+    <div className="max-w-3xl mx-auto px-6 pt-6 pb-2 flex items-center justify-between">
+      <button
+        onClick={onHomeClick}
+        className="flex items-baseline gap-1.5 hover:opacity-70 transition"
+        title="Return to home"
+        style={{ background: "transparent", border: "none", padding: 0, cursor: "pointer" }}
+      >
+        <span style={{
+          fontFamily: "'Fraunces', serif",
+          fontWeight: 500,
+          fontStyle: "italic",
+          fontSize: "1.5rem",
+          color: "#1A1814",
+          letterSpacing: "-0.01em"
+        }}>
+          Lingo
+        </span>
+        <span style={{
+          fontFamily: "'Fraunces', serif",
+          fontWeight: 500,
+          fontStyle: "italic",
+          fontSize: "1.5rem",
+          color: "#C8553D",
+          letterSpacing: "-0.01em"
+        }}>
+          Harmony
+        </span>
+      </button>
+      <button
+        onClick={onHomeClick}
+        title="Return to home"
+        style={{ background: "transparent", border: "none", padding: 0, cursor: "pointer", lineHeight: 0 }}
+        className="hover:scale-105 transition"
+      >
+        <LingoHarmonyLogo size={44} />
+      </button>
+    </div>
+  );
+}
+
+/* ===== App ===== */
+function App() {
+  const [view, setView] = useState({ name: "landing" });
+  const [timerMode, setTimerMode] = useState(300);
+  const { progress, loaded, markPassed, reset } = useProgress();
+
+  if (!loaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#FAF5EC" }}>
+        <div style={{ fontFamily: "'Fraunces', serif", fontStyle: "italic", color: "#807466" }}>Loading…</div>
+      </div>
+    );
+  }
+
+  const goLanding = () => setView({ name: "landing" });
+  const goTier = (tier) => setView({ name: "picker", tier });
+  const goPhrase = (phrase) => setView({ name: "phrase", phrase, tier: phrase.tier });
+  const tierPhrases = view.tier ? PHRASES.filter(p => p.tier === view.tier) : [];
+  const currentIdx = view.phrase ? tierPhrases.findIndex(p => p.id === view.phrase.id) : -1;
+  const nextPhrase = currentIdx >= 0 && currentIdx < tierPhrases.length - 1 ? tierPhrases[currentIdx + 1] : null;
+
+  return (
+    <div className="min-h-screen" style={{ background: "#FAF5EC" }}>
+      <BrandBar onHomeClick={goLanding} />
+      {view.name === "landing" && <LandingPage progress={progress} onSelectTier={goTier} timerMode={timerMode} setTimerMode={setTimerMode} onReset={reset} />}
+      {view.name === "picker" && <PhrasePicker tier={view.tier} progress={progress} onPickPhrase={goPhrase} onBack={goLanding} />}
+      {view.name === "phrase" && (
+        <PhraseScreen key={view.phrase.id} phrase={view.phrase} tier={view.tier} indexInTier={currentIdx} totalInTier={tierPhrases.length}
+          timerLimit={timerMode} onPass={markPassed} onBack={() => goTier(view.tier)}
+          onNext={() => { if (nextPhrase) goPhrase(nextPhrase); else goTier(view.tier); }} hasNext={!!nextPhrase} />
+      )}
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+</script>
+</body>
+</html>
