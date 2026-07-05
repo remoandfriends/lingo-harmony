@@ -988,7 +988,7 @@ function recordPass(phraseId, seconds) {
 function show(view) {
   document.body.dataset.view = view;
   window.scrollTo(0, 0);
-  setMusic(view === "landing" ? "home" : "play");
+  setMusic(view === "rep-sprint" || view === "rep-strength" ? "play" : "home");
 }
 document.querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", () => {
   const v = b.dataset.go;
