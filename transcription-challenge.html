@@ -98,8 +98,9 @@ body[data-view="rep-strength"] #view-rep-strength { display: block; }
 }
 #intro.gone { opacity: 0; pointer-events: none; transition: opacity .5s ease; }
 #intro video {
-  width: min(92vw, 960px); max-height: 80vh;
-  border-radius: 18px; border: 3px solid var(--ink);
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
   background: #05081C; display: block;
 }
 .intro-tap {
@@ -766,7 +767,7 @@ const CIRCUITS = [
 ];
 const LEVELS = ["A1", "A2", "B1", "B2", "C1"];
 /* sets whose audio has not been generated yet; remove ids as clips land */
-const AUDIO_MISSING = new Set([417,418,419,420,421,422,423,424,425,501,502,503,504,505,506,507,508,509,510,511,512,513,514,515,516]);
+const AUDIO_MISSING = new Set([]);
 const hasAudio = (id) => !AUDIO_MISSING.has(id);
 const PAR = (wc) => 20 + 7 * wc;
 const SPRINT_TIME = (wc) => 5 * wc;
@@ -864,6 +865,9 @@ let musicArmed = false, musicWanted = null;
 function musicUI() { $("musicBtn").classList.toggle("off", !store.music); }
 function setMusic(which) {
   musicWanted = which;
+  /* the intro video carries its own sound; no music until it is dismissed */
+  const iv = document.getElementById("intro");
+  if (iv && !iv.classList.contains("gone")) { musHome.pause(); musPlay.pause(); return; }
   if (!store.music || !musicArmed) { musHome.pause(); musPlay.pause(); return; }
   const on = which === "home" ? musHome : which === "play" ? musPlay : null;
   const off = which === "home" ? musPlay : musHome;
