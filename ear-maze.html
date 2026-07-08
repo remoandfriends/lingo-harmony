@@ -493,6 +493,12 @@ body{overscroll-behavior-y:none;
 .tut-coach.arrow-top .tut-arrow{top:-8px;border-right:none;border-bottom:none}
 .tut-coach.arrow-bottom .tut-arrow{bottom:-8px;border-left:none;border-top:none}
 .tut-coach.center .tut-arrow{display:none}
+@media (max-width:560px){
+  .shell{padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}
+  .stage{padding-left:8px;padding-right:8px}
+  .grid-wrap{padding:8px}
+  .grid-svg{inset:8px}
+}
 </style>
 </head>
 <body>
@@ -741,7 +747,10 @@ function fitGrid(){
   const twoCol = lcs && (lcs.gridTemplateColumns||'').split(' ').filter(Boolean).length > 1;
   const laneW = lane ? (twoCol ? lane.clientWidth - 270 - (parseFloat(lcs.columnGap)||14) : lane.clientWidth) : host.clientWidth;
   const availH = Math.max(180, window.innerHeight - top - 58);   /* room for the progress strip */
-  const availW = laneW - pad - 24;   /* board frame padding + hairline */
+  const wrapEl = document.getElementById('gridWrap');
+  const wcs = wrapEl ? getComputedStyle(wrapEl) : null;
+  const framePad = wcs ? ((parseFloat(wcs.paddingLeft)||10) + (parseFloat(wcs.paddingRight)||10)) : 20;
+  const availW = laneW - pad - framePad - 4;
   const gap = 5, N = state.size;
   const cell = Math.max(30, Math.min(116, Math.floor(Math.min((availW - gap*(N-1)) / N, (availH - gap*(N-1)) / N))));
   g.style.width = (cell * N + gap * (N - 1)) + 'px';
@@ -1326,9 +1335,13 @@ function buildMaze(pool, target, decoys){
   pool = pool.filter(w=>norm(w).length>=2);
   decoys = (decoys||[]).filter(w=>norm(w).length>=2);
   /* plant well beyond the objective so the board is rich with finds;
-     the planter fits as many as the letters allow, never fewer than target */
-  const want = Math.min(target + 6, pool.length);
-  let size = Math.max(8, Math.min(9, Math.ceil(Math.sqrt(want*3.2))));
+     the planter fits as many as the letters allow, never fewer than target.
+     Narrow screens start smaller so the tiles stay finger-sized. */
+  const narrow = Math.min(window.innerWidth || 9999, (document.documentElement||{}).clientWidth || 9999) < 560;
+  const want = Math.min(target + (narrow ? 4 : 6), pool.length);
+  let size = narrow
+    ? (target <= 12 ? 7 : target <= 17 ? 8 : 9)
+    : Math.max(8, Math.min(9, Math.ceil(Math.sqrt(want*3.2))));
   for(let sz = size; sz <= 9; sz++){
     for(let k = 0; k < 4; k++){
       const res = attemptPlant(sz, pool, want, decoys, target, false);
