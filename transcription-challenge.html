@@ -459,6 +459,11 @@ button.wo:hover { transform: translate(-3px, -3px); box-shadow: 6px 6px 0 var(--
   .stamp, .tclock.hot, .slot.active .sline, .coach-cameo, .intro-tap .tapbtn { animation: none !important; }
 }
 
+/* a finished sprint round: chips visibly out of play */
+#spBank.dead{pointer-events:none;opacity:.45;filter:saturate(.55);transition:opacity .3s ease}
+#spClock.penal{animation:clockPenal .5s ease}
+@keyframes clockPenal{0%{transform:scale(1)}30%{transform:scale(1.22);color:#DB7F8E}100%{transform:scale(1)}}
+
 </style>
 </head>
 <body data-view="landing">
@@ -1094,8 +1099,9 @@ function renderSprintGrid() {
 
 const sp = { ex: 0, set: 0, timer: null, left: 0, next: 0, started: false, t0: 0 };
 function openSprintSet(exIdx, setIdx) {
-  sp.ex = exIdx; sp.set = setIdx; sp.started = false; sp.next = 0;
+  sp.ex = exIdx; sp.set = setIdx; sp.started = false; sp.next = 0; sp.done = false;
   clearInterval(sp.timer);
+  $("spBank").classList.remove("dead");
   const ex = SPRINT_EXERCISES[exIdx];
   const phrase = byId[ex.ids[setIdx]];
   loadPhrase(phrase.id);
@@ -1169,7 +1175,7 @@ function spReveal(phrase) {
   }, 250);
 }
 function spTap(chipEl, phrase) {
-  if (!sp.started || chipEl.classList.contains("used")) return;
+  if (!sp.started || sp.done || chipEl.classList.contains("used")) return;
   const want = normStrict(phrase.tokens[sp.next]);
   if (chipEl.dataset.norm === want) {
     chipEl.classList.add("used");
@@ -1183,9 +1189,19 @@ function spTap(chipEl, phrase) {
     sfx("wrong", 0.8);
     chipEl.classList.add("no");
     setTimeout(() => chipEl.classList.remove("no"), 320);
+    /* a wrong pick costs five seconds: guessing is not free */
+    sp.left -= 5;
+    const ck = $("spClock");
+    ck.textContent = fmtClock(Math.ceil(Math.max(0, sp.left)));
+    if (sp.left <= Math.max(5, SPRINT_TIME(phrase.wc) * 0.2)) ck.classList.add("hot");
+    ck.classList.remove("penal"); void ck.offsetWidth; ck.classList.add("penal");
+    if (sp.left <= 0) { clearInterval(sp.timer); spVerdict(false, phrase); }
   }
 }
 function spVerdict(win, phrase) {
+  sp.done = true;
+  clearInterval(sp.timer);
+  $("spBank").classList.add("dead");
   const secs = (Date.now() - sp.t0) / 1000;
   const ex = SPRINT_EXERCISES[sp.ex];
   const v = $("spVerdict");
