@@ -1208,7 +1208,8 @@ function spVerdict(win, phrase) {
   else btns = '<button class="btn btn-azul" id="vNextSet">Next set</button><button class="btn btn-ghost" id="vBackEx">Exercises</button>';
   v.innerHTML =
     '<div class="stamp ' + (win ? "win" : "lose") + '">' + (win ? (exComplete ? "\u00a1Ejercicio completo!" : "\u00a1Set!") : "Se acab\u00f3 el tiempo") + '</div>' +
-    '<div class="meaning"><b>' + phrase.s + '</b><br />= ' + phrase.e + '</div>' +
+    (win ? '<div class="meaning"><b>' + phrase.s + '</b><br />= ' + phrase.e + '</div>'
+         : '<div class="meaning">Escucha otra vez. La frase se revela cuando la aciertas.</div>') +
     (win ? '<div class="timeline">' + fmtClock(secs) + ' of ' + fmtClock(SPRINT_TIME(phrase.wc)) + ' used</div>' : "") +
     '<div class="vbtns">' + btns + '</div>';
   v.hidden = false;
@@ -1533,7 +1534,8 @@ function stFinish() {
   else btns = '<button class="btn btn-azul" id="wNext">Next set</button><button class="btn btn-ghost" id="wBack">Bloques</button>';
   v.innerHTML =
     '<div class="stamp ' + (win ? "win" : "lose") + '">' + (win ? (circuitComplete ? "\u00a1Circuito completo!" : (blDone ? "\u00a1Bloque completo!" : "\u00a1Eso!")) : "Over par") + '</div>' +
-    '<div class="meaning"><b>' + st.phrase.s + '</b><br />= ' + st.phrase.e + '</div>' +
+    (win ? '<div class="meaning"><b>' + st.phrase.s + '</b><br />= ' + st.phrase.e + '</div>'
+         : '<div class="meaning">Escucha otra vez. La frase se revela cuando la aciertas.</div>') +
     '<div class="timeline">' + fmtClock(secs) + ' \u00b7 par ' + fmtClock(par) + (win && store.strength.passed[st.phrase.id] ? ' \u00b7 best ' + fmtClock(store.strength.passed[st.phrase.id]) : "") + '</div>' +
     '<div class="vbtns">' + btns + '</div>';
   v.hidden = false;
