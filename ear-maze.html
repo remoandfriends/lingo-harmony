@@ -89,7 +89,15 @@ body{overscroll-behavior-y:none;
 /* SHELL - unchanged */
 .shell{position:relative;z-index:2;max-width:560px;margin:0 auto;padding:18px 16px 64px;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right));padding-bottom:max(64px,calc(env(safe-area-inset-bottom) + 40px))}
 @media(min-width:920px){.shell.wide{max-width:1040px}.shell.game{padding-top:10px}}
-@media(min-width:920px){.shell.game{max-width:1400px}}
+@media(min-width:920px){.shell.game{max-width:1180px}}
+@media(min-width:920px){
+  /* every vertical pixel saved here becomes tile size below */
+  .shell.game{padding-top:6px}
+  .stage{padding:12px 18px 12px}
+  .listen{padding:8px 12px;margin-bottom:10px}
+  .grid-wrap{padding:8px}
+  .grid-svg{inset:8px}
+}
 
 /* TOP BAR */
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
@@ -162,7 +170,7 @@ body{overscroll-behavior-y:none;
 .breadcrumb{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
 .breadcrumb b{color:var(--signal-bright);font-weight:500}
 .game-wrap{display:grid;gap:14px}
-@media(min-width:920px){.game-wrap{grid-template-columns:minmax(0,max-content) 270px;align-items:start;justify-content:space-between}.stage{width:fit-content;max-width:100%}}
+@media(min-width:920px){.game-wrap{grid-template-columns:minmax(0,max-content) 270px;align-items:start;justify-content:center;column-gap:26px}.stage{width:fit-content;max-width:100%}}
 
 .stage{background:var(--panel);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:var(--r-xl);padding:18px;position:relative;overflow:hidden}
 .stage::before{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(120% 80% at 50% 0,rgba(110,141,247,.10),transparent 60%);pointer-events:none}
@@ -827,7 +835,7 @@ function fitGrid(){
   const lcs = lane ? getComputedStyle(lane) : null;
   const twoCol = lcs && (lcs.gridTemplateColumns||'').split(' ').filter(Boolean).length > 1;
   const laneW = lane ? (twoCol ? lane.clientWidth - 270 - (parseFloat(lcs.columnGap)||14) : lane.clientWidth) : host.clientWidth;
-  const availH = Math.max(180, window.innerHeight - top - 58);   /* room for the progress strip */
+  const availH = Math.max(180, window.innerHeight - top - 52);   /* room for the progress strip */
   const wrapEl = document.getElementById('gridWrap');
   const wcs = wrapEl ? getComputedStyle(wrapEl) : null;
   const framePad = wcs ? ((parseFloat(wcs.paddingLeft)||10) + (parseFloat(wcs.paddingRight)||10)) : 20;
@@ -1434,8 +1442,8 @@ function buildMaze(pool, target, decoys, opts){
   const want = sat ? pool.length : Math.min(target + (narrow ? 4 : 6), pool.length);
   let size, floorWords;
   if(sat){
-    size = narrow ? (tiny ? 10 : 11) : 11;
-    floorWords = narrow ? (tiny ? 22 : 24) : 26;
+    size = narrow ? (tiny ? 10 : 11) : 10;
+    floorWords = narrow ? (tiny ? 22 : 24) : 22;
   } else {
     const ladder = narrow
       ? [[12,7],[15,8],[20,9],[Infinity,10]]
