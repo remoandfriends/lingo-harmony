@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Fire Drill · Misheard Words · Lingo Harmony</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:ital,wght@1,400;1,600&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#141D48; --navy-deep:#0B1030; --panel:rgba(16,23,52,.72); --line:rgba(140,160,220,.16);
+  --azul:#3758C9; --azul-bright:#6E8DF7; --rosa:#DB7F8E; --cream:#FAF5EC;
+  --ink:#E9EDFF; --ink-faint:#9AA5CE; --found:#7CE8A8; --ember:#F2A65A; --ember-hot:#FF8A5C;
+  --mono:'Quicksand',sans-serif; --r-xl:22px; --ease:cubic-bezier(0.2,0.7,0.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--navy-deep);
+  background-image:radial-gradient(120% 90% at 50% 0%,#1B2560 0%,#10163B 45%,#0B1030 100%);
+  min-height:100vh;-webkit-font-smoothing:antialiased;
+}
+.shell{max-width:640px;margin:0 auto;padding:20px 16px 60px;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.brand{display:flex;flex-direction:column;gap:2px}
+.brand .t{font-family:'Quicksand';font-weight:700;font-size:22px;letter-spacing:.02em}
+.brand .t em{font-style:normal;color:var(--ember)}
+.brand .s{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-faint)}
+.pill{font-family:var(--mono);font-size:11px;letter-spacing:.08em;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:999px;padding:7px 14px;color:var(--ink-faint)}
+.panel{background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:var(--r-xl);padding:18px}
+.rise{animation:rise .5s var(--ease) both}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* ---------- home ---------- */
+.intro-copy{font-size:14.5px;color:var(--ink-faint);line-height:1.55;margin-bottom:18px}
+.intro-copy b{color:var(--ink)}
+.intro-copy .fr{font-family:'Fraunces';font-style:italic;color:var(--ember)}
+.drill-grid{display:grid;gap:12px}
+.drill-card{display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:16px;padding:14px 16px;cursor:pointer;transition:.22s var(--ease);text-align:left;width:100%;color:inherit;font:inherit}
+.drill-card:hover{transform:translateY(-2px);border-color:rgba(242,166,90,.5);background:rgba(255,255,255,.055)}
+.dc-l .n{font-family:'Quicksand';font-weight:700;font-size:16px}
+.dc-l .m{font-family:var(--mono);font-size:11px;color:var(--ink-faint);letter-spacing:.06em;margin-top:2px}
+.dc-r{font-family:var(--mono);font-size:12px;color:var(--ember);text-align:right;letter-spacing:.04em}
+.dc-r .none{color:var(--ink-faint)}
+
+/* ---------- drill ---------- */
+.hud{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px}
+.hud .back{background:none;border:1px solid var(--line);color:var(--ink-faint);border-radius:999px;padding:7px 14px;font-family:var(--mono);font-size:12px;cursor:pointer}
+.hud .prog{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--ink-faint)}
+.hud .streak{font-family:var(--mono);font-size:12px;color:var(--ember)}
+.listenbar{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.play{width:54px;height:54px;border-radius:50%;flex-shrink:0;border:none;cursor:pointer;display:grid;place-items:center;color:var(--cream);
+  background:radial-gradient(circle at 35% 30%,var(--ember-hot),#C96A38);box-shadow:0 10px 24px -10px rgba(255,138,92,.7);transition:.2s var(--ease)}
+.play:active{transform:scale(.94)}
+.play svg{width:22px;height:22px;margin-left:2px}
+.lmeta{flex:1;min-width:0}
+.lmeta .l1{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint)}
+.lmeta .l2{font-size:13px;color:var(--ink-faint);margin-top:3px}
+.tts-chip{display:none;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:#0B1030;background:var(--ember);border-radius:999px;padding:3px 9px;margin-top:5px;width:fit-content}
+.tts-chip.on{display:block}
+.timer{width:70px;text-align:right}
+.timer .tv{font-family:'Quicksand';font-weight:700;font-size:26px;color:var(--ink);font-variant-numeric:tabular-nums}
+.timer.hot .tv{color:var(--rosa);animation:pulse .8s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.55}}
+.tbar{height:5px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:18px}
+.tbar i{display:block;height:100%;width:100%;border-radius:99px;background:linear-gradient(90deg,var(--ember),var(--ember-hot));transition:width .12s linear}
+.timer.hot ~ .tbar i, .tbar.hot i{background:linear-gradient(90deg,var(--rosa),#FF6B7F)}
+
+.phrase{font-family:'Fraunces';font-style:italic;font-size:24px;line-height:1.45;text-align:center;padding:8px 4px 20px;min-height:86px}
+.phrase .blank{display:inline-block;min-width:84px;border-bottom:2.5px solid var(--ember);margin:0 4px;transform:translateY(-2px)}
+.phrase .blank.revealed{border-color:var(--found);color:var(--found);font-weight:600}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choice{font-family:'DM Sans';font-weight:600;font-size:16.5px;color:var(--ink);background:rgba(255,255,255,.045);border:1.5px solid var(--line);border-radius:14px;padding:15px 12px;cursor:pointer;transition:.18s var(--ease);text-align:center}
+.choice:hover{border-color:var(--azul-bright);transform:translateY(-1px)}
+.choice:disabled{cursor:default;transform:none}
+.choice.right{background:rgba(124,232,168,.14);border-color:var(--found);color:var(--found)}
+.choice.wrong{background:rgba(219,127,142,.14);border-color:var(--rosa);color:var(--rosa);animation:shake .3s ease}
+.choice.dim{opacity:.35}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.verdict{margin-top:16px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.04);padding:14px 16px;display:none}
+.verdict.show{display:block;animation:rise .35s var(--ease) both}
+.verdict .stamp{font-family:'Quicksand';font-weight:700;font-size:15px;margin-bottom:6px}
+.verdict.good .stamp{color:var(--found)}
+.verdict.bad .stamp{color:var(--rosa)}
+.verdict .en{font-size:13.5px;color:var(--ink-faint);margin-bottom:8px}
+.verdict .note{font-size:13.5px;line-height:1.5;color:var(--ink)}
+.verdict .note b{color:var(--ember)}
+.nextbtn{margin-top:12px;width:100%;font-family:'Quicksand';font-weight:700;font-size:15px;color:#0B1030;background:linear-gradient(135deg,var(--ember),var(--ember-hot));border:none;border-radius:12px;padding:13px;cursor:pointer;display:none}
+.nextbtn.show{display:block}
+
+/* ---------- finish ---------- */
+.fin-head{text-align:center;padding:10px 0 18px}
+.fin-head .big{font-family:'Quicksand';font-weight:700;font-size:40px}
+.fin-head .big span{color:var(--ember)}
+.fin-head .sub{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);margin-top:6px}
+.fin-head .rec{display:none;margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--found);letter-spacing:.1em}
+.fin-head .rec.on{display:block}
+.review-title{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--rosa);margin:14px 0 10px}
+.rev{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px;background:rgba(255,255,255,.03)}
+.rev .es{font-family:'Fraunces';font-style:italic;font-size:16.5px}
+.rev .es b{color:var(--found);font-weight:600}
+.rev .nt{font-size:12.5px;color:var(--ink-faint);margin-top:6px;line-height:1.45}
+.rev .rp{margin-top:8px;background:none;border:1px solid var(--line);color:var(--ember);border-radius:999px;padding:5px 12px;font-family:var(--mono);font-size:11px;cursor:pointer}
+.fin-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.fin-actions button{font-family:'Quicksand';font-weight:700;font-size:14.5px;border-radius:12px;padding:13px;cursor:pointer;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--ink)}
+.fin-actions button.primary{background:linear-gradient(135deg,var(--ember),var(--ember-hot));border:none;color:#0B1030}
+.allgood{font-size:14px;color:var(--found);text-align:center;padding:8px 0 2px}
+.screen{display:none}
+.screen.on{display:block}
+@media (max-width:400px){ .phrase{font-size:21px} .choice{font-size:15px;padding:13px 10px} }
+</style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="brand">
+      <div class="t">Fire<em>Drill</em></div>
+      <div class="s">Misheard words &middot; Spanish listening</div>
+    </div>
+    <div class="pill" id="totalPill">0 / 6 drills</div>
+  </header>
+
+  <!-- HOME -->
+  <section class="screen on" id="scrHome">
+    <div class="panel rise">
+      <p class="intro-copy">Native Spanish fuses words into <span class="fr">one long sound</span>: <b>medijoque</b>, <b>aversi</b>, <b>keseso</b>. Each drill plays a phrase at natural speed. You get <b>15 seconds</b> to name the piece your ear tried to trick you on. The same traps come back in later drills until they cannot fool you.</p>
+      <div class="drill-grid" id="drillGrid"></div>
+    </div>
+  </section>
+
+  <!-- DRILL -->
+  <section class="screen" id="scrDrill">
+    <div class="hud">
+      <button class="back" id="btnBack">&larr; Exit</button>
+      <div class="prog" id="prog">1 / 12</div>
+      <div class="streak" id="streak"></div>
+    </div>
+    <div class="panel rise">
+      <div class="listenbar">
+        <button class="play" id="btnPlay" aria-label="Play audio">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.55.83l10-6.5a1 1 0 0 0 0-1.66l-10-6.5A1 1 0 0 0 8 5.5z"/></svg>
+        </button>
+        <div class="lmeta">
+          <div class="l1">Listen &middot; native speed</div>
+          <div class="l2">Replay free. The clock starts when the audio ends.</div>
+          <div class="tts-chip" id="ttsChip">placeholder voice</div>
+        </div>
+        <div class="timer" id="timerBox"><div class="tv" id="timerVal">15</div></div>
+      </div>
+      <div class="tbar" id="tbar"><i id="tbarFill" style="width:100%"></i></div>
+      <div class="phrase" id="phrase"></div>
+      <div class="choices" id="choices"></div>
+      <div class="verdict" id="verdict">
+        <div class="stamp" id="vStamp"></div>
+        <div class="en" id="vEn"></div>
+        <div class="note" id="vNote"></div>
+      </div>
+      <button class="nextbtn" id="btnNext">Next &rarr;</button>
+    </div>
+  </section>
+
+  <!-- FINISH -->
+  <section class="screen" id="scrFin">
+    <div class="panel rise">
+      <div class="fin-head">
+        <div class="big" id="finScore">0</div>
+        <div class="sub" id="finSub">Drill 1 &middot; 0 of 12</div>
+        <div class="rec" id="finRec">New best score</div>
+      </div>
+      <div id="finReview"></div>
+      <div class="fin-actions">
+        <button id="btnRetry">Retry drill</button>
+        <button class="primary" id="btnNextDrill">Next drill</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ============================================================
+   FIRE DRILL
+   Misheard-word recognition at native speed. Each item: hear a
+   phrase, then 15 seconds to pick what the blurred chunk really
+   was, among sound-alike traps. Traps recur across drills, never
+   twice in one, so the ear learns the pattern, not the item.
+   ============================================================ */
+const DRILLS = [{"n":1,"items":[{"t":"voy a","v":1,"es":"Voy a comprar pan.","en":"I am going to buy bread.","chunk":"voy a","choices":["voy a","boya","hoya","vaya"],"note":"\"boya\": voy a fuses into one syllable pair."},{"t":"le valen","v":2,"es":"Le valen las críticas.","en":"He could not care less about the criticism.","chunk":"le valen","choices":["le valen","violín","le van","le hablen"],"note":"\"levalen\": famously heard as \"violín\"."},{"t":"por","v":1,"es":"Lo compré por internet.","en":"I bought it on the internet.","chunk":"por","choices":["por","para","puro","pero"],"note":"\"por\" attaches to the next word: \"por internet\" sounds like \"pornternet\"."},{"t":"dónde está","v":2,"es":"¿Dónde está tu hermano?","en":"Where is your brother?","chunk":"dónde está","choices":["dónde está","onde ta","dónde esta","donde estar"],"note":"\"ondestá\", the d up front disappears."},{"t":"cenar","v":1,"es":"Vamos a cenar a las nueve.","en":"We are going to have dinner at nine.","chunk":"cenar","choices":["cenar","sanar","sentar","soñar"],"note":"\"vamos a cenar\" becomes \"vamossenar\", one word."},{"t":"dijo","v":1,"es":"Me dijo que no viene hoy.","en":"He told me he is not coming today.","chunk":"dijo","choices":["dijo","dejó","jugó","hizo"],"note":"Natives glue it: \"medijoque\" is one sound, not three words."},{"t":"también","v":2,"es":"Ella también va al cine.","en":"She is also going to the movies.","chunk":"también","choices":["también","tan bien","ta men","tú vienes"],"note":"\"tamién\", the b softens to nothing."},{"t":"se canceló el vuelo","v":1,"es":"Se canceló el vuelo por la tormenta.","en":"The flight was canceled because of the storm.","chunk":"se canceló el vuelo","choices":["se canceló el vuelo","se cansó el vuelo","se canceló el suelo","se cae el vuelo"],"note":"Only \"vuelo\" survives; the rest blurs together."},{"t":"lo que","v":2,"es":"No entendí lo que dijo.","en":"I did not understand what he said.","chunk":"lo que","choices":["lo que","loco","luque","el que"],"note":"\"loke\", easily heard as \"loco\"."},{"t":"más o menos","v":1,"es":"Está más o menos listo.","en":"It is more or less ready.","chunk":"más o menos","choices":["más o menos","más humano","ma someno","más o me nos"],"note":"\"másomeno\", the s links everything."},{"t":"hacer","v":1,"es":"No sé qué hacer con esto.","en":"I do not know what to do with this.","chunk":"hacer","choices":["hacer","querer","a ser","ayer"],"note":"\"No sé qué hacer\" collapses to \"nosekeasér\", the h is silent."},{"t":"del piso de arriba","v":2,"es":"Viene ruido del piso de arriba.","en":"Noise is coming from the floor above.","chunk":"del piso de arriba","choices":["del piso de arriba","de la pieza arriba","del peso de arriba","del piso ha arriba"],"note":"Whole location fuses: \"delpisodearriba\"."}]},{"n":2,"items":[{"t":"dijo","v":2,"es":"Nadie dijo la verdad completa.","en":"Nobody told the whole truth.","chunk":"dijo","choices":["dijo","dejó","jugó","hizo"],"note":"Natives glue it: \"medijoque\" is one sound, not three words."},{"t":"como si nada hubiera pasado","v":1,"es":"Regresó como si nada hubiera pasado.","en":"He came back as if nothing had happened.","chunk":"como si nada hubiera pasado","choices":["como si nada hubiera pasado","como si nada iba pasando","como si nada ha pasado","cuando nada hubo pasado"],"note":"Native speed erases it: \"comosinadahubierapasao\"."},{"t":"cuando regresó","v":1,"es":"Cuando regresó, ya era tarde.","en":"When he came back, it was already late.","chunk":"cuando regresó","choices":["cuando regresó","cuando regresa","cuando llegará","cuando regresé"],"note":"Accent is everything: \"regresó\" past, \"regresa\" present."},{"t":"ahí","v":2,"es":"Ahí viene el autobús.","en":"There comes the bus.","chunk":"ahí","choices":["ahí","hay","ay","a mí"],"note":"hay, ahí, and ay are near-identical triplets. Stress splits them."},{"t":"va a haber","v":1,"es":"Va a haber una fiesta el sábado.","en":"There is going to be a party on Saturday.","chunk":"va a haber","choices":["va a haber","a ver","va a ver","saber"],"note":"\"vaber\": three a-sounds collapse into one."},{"t":"cenar","v":2,"es":"No quiero cenar tan tarde.","en":"I do not want to eat dinner so late.","chunk":"cenar","choices":["cenar","sanar","sentar","soñar"],"note":"\"vamos a cenar\" becomes \"vamossenar\", one word."},{"t":"a ver si","v":2,"es":"A ver si llegas temprano.","en":"Let us see if you arrive early.","chunk":"a ver si","choices":["a ver si","haber sí","a veces","a vestir"],"note":"\"aversi\", identical sound to \"haber si\". Context decides."},{"t":"me he","v":2,"es":"Me he perdido dos veces.","en":"I have gotten lost twice.","chunk":"me he","choices":["me he","me","mi","me es"],"note":"\"mé\": the perfect tense hides in one vowel."},{"t":"ni un","v":2,"es":"No queda ni un asiento.","en":"There is not even one seat left.","chunk":"ni un","choices":["ni un","ningún","ni en","nube"],"note":"\"niun\": two tiny words fused, often heard as \"ningún\"."},{"t":"se mete en todo","v":2,"es":"El jefe se mete en todo.","en":"The boss meddles in everything.","chunk":"se mete en todo","choices":["se mete en todo","se me da todo","se mete el lodo","sé meterme"],"note":"Fuses to \"semeteentodo\", the \"en\" nearly vanishes."},{"t":"es que","v":1,"es":"Es que no tuve tiempo.","en":"The thing is, I did not have time.","chunk":"es que","choices":["es que","esquí","este","se que"],"note":"\"eske\", the universal excuse-starter blob."},{"t":"dejó","v":2,"es":"Dejó las llaves en la mesa.","en":"He left the keys on the table.","chunk":"dejó","choices":["dejó","dijo","bajó","llegó"],"note":"One soft breath: \"dehó\". Easily confused with \"dijo\"."}]},{"n":3,"items":[{"t":"hacer","v":2,"es":"Tengo que hacer la cena.","en":"I have to make dinner.","chunk":"hacer","choices":["hacer","querer","a ser","ayer"],"note":"\"No sé qué hacer\" collapses to \"nosekeasér\", the h is silent."},{"t":"me he","v":1,"es":"Me he olvidado las llaves.","en":"I have forgotten my keys.","chunk":"me he","choices":["me he","me","mi","me es"],"note":"\"mé\": the perfect tense hides in one vowel."},{"t":"qué es eso","v":1,"es":"¿Qué es eso que traes?","en":"What is that you are carrying?","chunk":"qué es eso","choices":["qué es eso","queso","que se sé","qué hueso"],"note":"\"keséso\" sounds exactly like \"queso\". A classic."},{"t":"se me olvidó","v":2,"es":"Se me olvidó la cartera.","en":"I forgot my wallet.","chunk":"se me olvidó","choices":["se me olvidó","se molvidó","se me dolió","sé mi olvido"],"note":"\"semeolvidó\", three words in one slide."},{"t":"te quiero","v":1,"es":"Te quiero mucho, mamá.","en":"I love you a lot, mom.","chunk":"te quiero","choices":["te quiero","te quedo","te fiero","the hero"],"note":"\"tekiero\", one word of affection."},{"t":"acaba de","v":1,"es":"Acaba de salir del trabajo.","en":"He just left work.","chunk":"acaba de","choices":["acaba de","acábate","a cada","acabó de"],"note":"\"acabade\", one breath meaning \"just did\"."},{"t":"a todo volumen","v":2,"es":"La tele está a todo volumen.","en":"The TV is at full volume.","chunk":"a todo volumen","choices":["a todo volumen","a todo lo humano","a toda la lumen","al todo bolo men"],"note":"\"atodovolumen\", the word \"volumen\" nearly disappears."},{"t":"casi","v":1,"es":"Casi le da un infarto.","en":"He almost had a heart attack.","chunk":"casi","choices":["casi","que si","casino","cansé"],"note":"Starts a blob: \"casiledauninfarto\" runs as one word."},{"t":"del piso de arriba","v":1,"es":"Es el vecino del piso de arriba.","en":"It is the neighbor from the floor above.","chunk":"del piso de arriba","choices":["del piso de arriba","de la pieza arriba","del peso de arriba","del piso ha arriba"],"note":"Whole location fuses: \"delpisodearriba\"."},{"t":"una vez","v":2,"es":"Una vez más, por favor.","en":"One more time, please.","chunk":"una vez","choices":["una vez","una ves","a nueve","una fe"],"note":"\"unavés\", final z softens to s."},{"t":"estuvimos","v":1,"es":"Estuvimos atorados una hora.","en":"We were stuck for an hour.","chunk":"estuvimos","choices":["estuvimos","estuvo","tuvimos","estamos"],"note":"Final s drops: \"estuvimo atoraos\"."},{"t":"para que","v":2,"es":"Vine para que me ayudes.","en":"I came so you can help me.","chunk":"para que","choices":["para que","paquete","porque","para qué"],"note":"\"paque\", para shrinks to pa."}]},{"n":4,"items":[{"t":"para colmo","v":2,"es":"Para colmo, empezó a llover.","en":"To top it off, it started to rain.","chunk":"para colmo","choices":["para colmo","para como","por colmo","para el moño"],"note":"\"paracolmo\", often heard as \"para como\"."},{"t":"la verdad","v":2,"es":"Dime la verdad de una vez.","en":"Tell me the truth once and for all.","chunk":"la verdad","choices":["la verdad","la ver da","lavar da","la vela"],"note":"Final d vanishes: \"laverdá\"."},{"t":"todavía","v":1,"es":"Todavía no he comido.","en":"I still have not eaten.","chunk":"todavía","choices":["todavía","to a vía","toda vía","ya había"],"note":"\"toavía\", the d melts in the middle."},{"t":"te quiero","v":2,"es":"Solo vine a decirte que te quiero.","en":"I only came to tell you I love you.","chunk":"te quiero","choices":["te quiero","te quedo","te fiero","the hero"],"note":"\"tekiero\", one word of affection."},{"t":"por","v":2,"es":"Viajamos por un mes.","en":"We traveled for a month.","chunk":"por","choices":["por","para","puro","pero"],"note":"\"por\" attaches to the next word: \"por internet\" sounds like \"pornternet\"."},{"t":"de la ciudad","v":2,"es":"Salimos de la ciudad temprano.","en":"We left the city early.","chunk":"de la ciudad","choices":["de la ciudad","de la su da","de las dudas","de la sedada"],"note":"\"delasiudá\", the final d fades away."},{"t":"lo que","v":1,"es":"Haz lo que quieras.","en":"Do whatever you want.","chunk":"lo que","choices":["lo que","loco","luque","el que"],"note":"\"loke\", easily heard as \"loco\"."},{"t":"ni un","v":1,"es":"No bajé ni un kilo.","en":"I did not lose even one kilo.","chunk":"ni un","choices":["ni un","ningún","ni en","nube"],"note":"\"niun\": two tiny words fused, often heard as \"ningún\"."},{"t":"qué es eso","v":2,"es":"¿Qué es eso en la mesa?","en":"What is that on the table?","chunk":"qué es eso","choices":["qué es eso","queso","que se sé","qué hueso"],"note":"\"keséso\" sounds exactly like \"queso\". A classic."},{"t":"sin avisarme","v":2,"es":"Cambiaron la hora sin avisarme.","en":"They changed the time without telling me.","chunk":"sin avisarme","choices":["sin avisarme","sin visarme","si navegarme","sin a su arte"],"note":"\"sinavisarme\", a verb-shaped blur."},{"t":"también","v":1,"es":"Yo también quiero café.","en":"I also want coffee.","chunk":"también","choices":["también","tan bien","ta men","tú vienes"],"note":"\"tamién\", the b softens to nothing."},{"t":"le valen","v":1,"es":"Le valen los comentarios.","en":"The comments do not matter to him.","chunk":"le valen","choices":["le valen","violín","le van","le hablen"],"note":"\"levalen\": famously heard as \"violín\"."}]},{"n":5,"items":[{"t":"se me olvidó","v":1,"es":"Se me olvidó tu nombre.","en":"I forgot your name.","chunk":"se me olvidó","choices":["se me olvidó","se molvidó","se me dolió","sé mi olvido"],"note":"\"semeolvidó\", three words in one slide."},{"t":"se canceló el vuelo","v":2,"es":"Se canceló el vuelo de regreso.","en":"The return flight was canceled.","chunk":"se canceló el vuelo","choices":["se canceló el vuelo","se cansó el vuelo","se canceló el suelo","se cae el vuelo"],"note":"Only \"vuelo\" survives; the rest blurs together."},{"t":"acaba de","v":2,"es":"El tren acaba de llegar.","en":"The train just arrived.","chunk":"acaba de","choices":["acaba de","acábate","a cada","acabó de"],"note":"\"acabade\", one breath meaning \"just did\"."},{"t":"estuvimos","v":2,"es":"Estuvimos esperando afuera.","en":"We were waiting outside.","chunk":"estuvimos","choices":["estuvimos","estuvo","tuvimos","estamos"],"note":"Final s drops: \"estuvimo atoraos\"."},{"t":"va a haber","v":2,"es":"Va a haber mucho tráfico.","en":"There is going to be a lot of traffic.","chunk":"va a haber","choices":["va a haber","a ver","va a ver","saber"],"note":"\"vaber\": three a-sounds collapse into one."},{"t":"cuando regresó","v":2,"es":"Cuando regresó, todos dormían.","en":"When she returned, everyone was asleep.","chunk":"cuando regresó","choices":["cuando regresó","cuando regresa","cuando llegará","cuando regresé"],"note":"Accent is everything: \"regresó\" past, \"regresa\" present."},{"t":"ahí","v":1,"es":"Déjalo ahí, por favor.","en":"Leave it there, please.","chunk":"ahí","choices":["ahí","hay","ay","a mí"],"note":"hay, ahí, and ay are near-identical triplets. Stress splits them."},{"t":"se mete en todo","v":1,"es":"Tu tía se mete en todo.","en":"Your aunt gets into everything.","chunk":"se mete en todo","choices":["se mete en todo","se me da todo","se mete el lodo","sé meterme"],"note":"Fuses to \"semeteentodo\", the \"en\" nearly vanishes."},{"t":"más o menos","v":2,"es":"Llegamos más o menos a las dos.","en":"We arrived at around two.","chunk":"más o menos","choices":["más o menos","más humano","ma someno","más o me nos"],"note":"\"másomeno\", the s links everything."},{"t":"la verdad","v":1,"es":"La verdad, no me gustó.","en":"Honestly, I did not like it.","chunk":"la verdad","choices":["la verdad","la ver da","lavar da","la vela"],"note":"Final d vanishes: \"laverdá\"."},{"t":"es que","v":2,"es":"Es que llegué muy tarde.","en":"It is just that I arrived very late.","chunk":"es que","choices":["es que","esquí","este","se que"],"note":"\"eske\", the universal excuse-starter blob."},{"t":"dónde está","v":1,"es":"¿Dónde está la salida?","en":"Where is the exit?","chunk":"dónde está","choices":["dónde está","onde ta","dónde esta","donde estar"],"note":"\"ondestá\", the d up front disappears."}]},{"n":6,"items":[{"t":"dejó","v":1,"es":"Me dejó todos sus pendientes.","en":"She left me all her unfinished tasks.","chunk":"dejó","choices":["dejó","dijo","bajó","llegó"],"note":"One soft breath: \"dehó\". Easily confused with \"dijo\"."},{"t":"casi","v":2,"es":"Casi pierdo el tren.","en":"I almost missed the train.","chunk":"casi","choices":["casi","que si","casino","cansé"],"note":"Starts a blob: \"casiledauninfarto\" runs as one word."},{"t":"para que","v":1,"es":"Te llamo para que no te preocupes.","en":"I am calling so you do not worry.","chunk":"para que","choices":["para que","paquete","porque","para qué"],"note":"\"paque\", para shrinks to pa."},{"t":"como si nada hubiera pasado","v":2,"es":"Siguió hablando como si nada hubiera pasado.","en":"She kept talking as if nothing had happened.","chunk":"como si nada hubiera pasado","choices":["como si nada hubiera pasado","como si nada iba pasando","como si nada ha pasado","cuando nada hubo pasado"],"note":"Native speed erases it: \"comosinadahubierapasao\"."},{"t":"a todo volumen","v":1,"es":"Pone música a todo volumen.","en":"He plays music at full volume.","chunk":"a todo volumen","choices":["a todo volumen","a todo lo humano","a toda la lumen","al todo bolo men"],"note":"\"atodovolumen\", the word \"volumen\" nearly disappears."},{"t":"una vez","v":1,"es":"Vine aquí una vez.","en":"I came here once.","chunk":"una vez","choices":["una vez","una ves","a nueve","una fe"],"note":"\"unavés\", final z softens to s."},{"t":"para colmo","v":1,"es":"Para colmo, perdieron las maletas.","en":"To top it off, they lost the suitcases.","chunk":"para colmo","choices":["para colmo","para como","por colmo","para el moño"],"note":"\"paracolmo\", often heard as \"para como\"."},{"t":"sin avisarme","v":1,"es":"Se fue sin avisarme.","en":"He left without telling me.","chunk":"sin avisarme","choices":["sin avisarme","sin visarme","si navegarme","sin a su arte"],"note":"\"sinavisarme\", a verb-shaped blur."},{"t":"voy a","v":2,"es":"Voy a llamarte mañana.","en":"I am going to call you tomorrow.","chunk":"voy a","choices":["voy a","boya","hoya","vaya"],"note":"\"boya\": voy a fuses into one syllable pair."},{"t":"a ver si","v":1,"es":"A ver si me siento mejor.","en":"Let us see if I feel better.","chunk":"a ver si","choices":["a ver si","haber sí","a veces","a vestir"],"note":"\"aversi\", identical sound to \"haber si\". Context decides."},{"t":"de la ciudad","v":1,"es":"Vive lejos de la ciudad.","en":"She lives far from the city.","chunk":"de la ciudad","choices":["de la ciudad","de la su da","de las dudas","de la sedada"],"note":"\"delasiudá\", the final d fades away."},{"t":"todavía","v":2,"es":"¿Todavía estás despierto?","en":"Are you still awake?","chunk":"todavía","choices":["todavía","to a vía","toda vía","ya había"],"note":"\"toavía\", the d melts in the middle."}]}];
+const AUDIO_BASE = 'https://cdn.jsdelivr.net/gh/remoandfriends/spanish-trainer-audio@main/firedrill/';
+/* CDN filenames stay pure ASCII: accents stripped, spaces to underscores */
+function slugId(t){ return t.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ /g,'_'); }
+const ITEM_SECS = 15;
+const STORE_KEY = 'fd_v1_best';
+
+const $ = id => document.getElementById(id);
+function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+/* tiny WebAudio blips, no assets needed */
+const Fx = { ctx:null,
+  ensure(){ if(!this.ctx){ try{ this.ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+            if(this.ctx && this.ctx.state==='suspended'){ try{ this.ctx.resume(); }catch(e){} } },
+  tone(f, dur, type, gain){ this.ensure(); if(!this.ctx) return;
+    const o=this.ctx.createOscillator(), g=this.ctx.createGain();
+    o.type=type||'sine'; o.frequency.value=f; g.gain.value=gain||0.12;
+    o.connect(g); g.connect(this.ctx.destination);
+    const t=this.ctx.currentTime; g.gain.setValueAtTime(g.gain.value,t);
+    g.gain.exponentialRampToValueAtTime(0.001,t+dur); o.start(t); o.stop(t+dur); },
+  right(){ this.tone(660,.12,'sine',.14); setTimeout(()=>this.tone(880,.16,'sine',.12),90); },
+  wrong(){ this.tone(196,.22,'sawtooth',.10); },
+  tick(){ this.tone(1180,.05,'square',.05); }
+};
+
+function loadBest(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY)||'{}'); }catch(e){ return {}; } }
+function saveBest(b){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(b)); }catch(e){} }
+
+const FD = {
+  state:null,
+  audio:null, utter:null, safety:0,
+  home(){
+    this.stopAudio(); clearInterval(this.state && this.state.iv);
+    this.state=null;
+    show('scrHome'); renderHome();
+  },
+  startDrill(n){
+    const d = DRILLS.find(x=>x.n===n); if(!d) return;
+    this.state = { n, i:0, score:0, correct:0, streak:0, bestStreak:0,
+                   remaining:ITEM_SECS, running:false, resolved:false,
+                   misses:[], iv:0 };
+    show('scrDrill');
+    this.loadItem();
+  },
+  current(){ const st=this.state; if(!st) return null;
+    return DRILLS.find(x=>x.n===st.n).items[st.i]; },
+  loadItem(){
+    const st=this.state, it=this.current();
+    st.remaining=ITEM_SECS; st.running=false; st.resolved=false;
+    clearInterval(st.iv);
+    $('prog').textContent = (st.i+1) + ' / 12';
+    $('streak').textContent = st.streak>1 ? ('\uD83D\uDD25 ' + st.streak) : '';
+    $('timerVal').textContent = ITEM_SECS;
+    $('timerBox').classList.remove('hot'); $('tbar').classList.remove('hot');
+    $('tbarFill').style.width='100%';
+    $('verdict').className='verdict'; $('btnNext').className='nextbtn';
+    /* phrase with the trap chunk blanked */
+    const low = it.es.toLowerCase(), chunk = it.chunk.toLowerCase();
+    const at = low.indexOf(chunk);
+    const before = it.es.slice(0, at), after = it.es.slice(at + it.chunk.length);
+    $('phrase').innerHTML = esc(before) + '<span class="blank" id="blank">&nbsp;</span>' + esc(after);
+    /* shuffled choices */
+    const order=[...it.choices].sort(()=>Math.random()-0.5);
+    $('choices').innerHTML='';
+    order.forEach(c=>{
+      const b=document.createElement('button');
+      b.className='choice'; b.textContent=c;
+      b.onclick=()=>this.pick(c, b);
+      $('choices').appendChild(b);
+    });
+    this.playAudio();
+  },
+  audioSrc(it){ return AUDIO_BASE + 'fd-' + slugId(it.t) + '-' + it.v + '.mp3'; },
+  stopAudio(){
+    if(this.audio){ try{ this.audio.pause(); }catch(e){} this.audio=null; }
+    if(this.utter){ try{ speechSynthesis.cancel(); }catch(e){} this.utter=null; }
+    clearTimeout(this.safety);
+  },
+  playAudio(){
+    const st=this.state, it=this.current(); if(!it || st.resolved) return;
+    Fx.ensure(); this.stopAudio();
+    const a = new Audio(this.audioSrc(it));
+    this.audio = a;
+    a.onended = ()=>{ this.startClock(); };
+    a.onerror = ()=>{ this.speakFallback(it); };
+    a.play().catch(()=>this.speakFallback(it));
+    /* whatever happens, the drill never stalls */
+    clearTimeout(this.safety);
+    this.safety = setTimeout(()=>this.startClock(), 8000);
+  },
+  speakFallback(it){
+    $('ttsChip').classList.add('on');
+    try{
+      const u = new SpeechSynthesisUtterance(it.es);
+      u.lang='es-ES'; u.rate=1.0;
+      const vs = speechSynthesis.getVoices().filter(v=>v.lang && v.lang.startsWith('es'));
+      if(vs.length) u.voice = vs[0];
+      u.onend = ()=>this.startClock();
+      this.utter=u;
+      speechSynthesis.cancel(); speechSynthesis.speak(u);
+      clearTimeout(this.safety);
+      this.safety = setTimeout(()=>this.startClock(), 4000);
+    }catch(e){ this.startClock(); }
+  },
+  startClock(){
+    const st=this.state; if(!st || st.running || st.resolved) return;
+    clearTimeout(this.safety);
+    st.running=true;
+    const t0=Date.now(), start=st.remaining;
+    st.iv=setInterval(()=>{
+      if(!this.state || this.state!==st){ clearInterval(st.iv); return; }
+      st.remaining = Math.max(0, start - (Date.now()-t0)/1000);
+      const c = Math.ceil(st.remaining);
+      $('timerVal').textContent = c;
+      $('tbarFill').style.width = (st.remaining/ITEM_SECS*100) + '%';
+      if(st.remaining <= 5.05 && st.remaining > 0){
+        $('timerBox').classList.add('hot'); $('tbar').classList.add('hot');
+        if(Math.abs(st.remaining - c) < 0.11) Fx.tick();
+      }
+      if(st.remaining <= 0){ this.resolve(null, null); }
+    }, 100);
+  },
+  pick(choice, btn){
+    const st=this.state; if(!st || st.resolved) return;
+    this.resolve(choice, btn);
+  },
+  resolve(choice, btn){
+    const st=this.state, it=this.current(); if(!st || st.resolved) return;
+    st.resolved=true; st.running=false; clearInterval(st.iv);
+    this.stopAudio();
+    const good = choice === it.chunk;
+    /* reveal the blank */
+    const bl=$('blank');
+    if(bl){ bl.classList.add('revealed'); bl.innerHTML=esc(it.chunk); }
+    /* paint choices */
+    [...$('choices').children].forEach(b=>{
+      b.disabled=true;
+      if(b.textContent===it.chunk) b.classList.add('right');
+      else if(btn===b) b.classList.add('wrong');
+      else b.classList.add('dim');
+    });
+    const v=$('verdict');
+    if(good){
+      const gain = 100 + Math.round(st.remaining*3);
+      st.score += gain; st.correct++; st.streak++;
+      st.bestStreak=Math.max(st.bestStreak, st.streak);
+      Fx.right();
+      v.className='verdict show good';
+      $('vStamp').textContent='\u2713 ' + it.chunk + '  \u00b7  +' + gain;
+      $('vEn').textContent=it.en;
+      $('vNote').textContent='';
+      setTimeout(()=>{ if(this.state===st && st.resolved) this.next(); }, 1400);
+    } else {
+      st.streak=0;
+      st.misses.push(it);
+      Fx.wrong();
+      v.className='verdict show bad';
+      $('vStamp').textContent = choice===null ? '\u23F1 Time. It was: ' + it.chunk : '\u2717 It was: ' + it.chunk;
+      $('vEn').textContent=it.en;
+      $('vNote').innerHTML='<b>Ear note:</b> ' + esc(it.note);
+      $('btnNext').classList.add('show');
+    }
+  },
+  next(){
+    const st=this.state; if(!st) return;
+    if(st.i >= 11){ this.finish(); return; }
+    st.i++;
+    this.loadItem();
+  },
+  finish(){
+    const st=this.state;
+    clearInterval(st.iv); this.stopAudio();
+    const best=loadBest();
+    const prev=best['d'+st.n];
+    const rec = !prev || st.score > prev.score;
+    if(rec){ best['d'+st.n]={score:st.score, correct:st.correct}; saveBest(best); }
+    $('finScore').innerHTML = esc(String(st.score)) + '<span> pts</span>';
+    $('finSub').textContent = 'Drill ' + st.n + ' \u00b7 ' + st.correct + ' of 12 \u00b7 best streak ' + st.bestStreak;
+    $('finRec').classList.toggle('on', rec && st.correct>0);
+    const rv=$('finReview'); rv.innerHTML='';
+    if(st.misses.length){
+      const h=document.createElement('div'); h.className='review-title';
+      h.textContent='The ones that got away'; rv.appendChild(h);
+      st.misses.forEach(it=>{
+        const d=document.createElement('div'); d.className='rev';
+        const low=it.es.toLowerCase(); const at=low.indexOf(it.chunk.toLowerCase());
+        d.innerHTML='<div class="es">'+esc(it.es.slice(0,at))+'<b>'+esc(it.chunk)+'</b>'+esc(it.es.slice(at+it.chunk.length))+'</div>'
+          +'<div class="nt">'+esc(it.en)+' \u00b7 '+esc(it.note)+'</div>';
+        const rp=document.createElement('button'); rp.className='rp'; rp.textContent='\u25B6 hear it again';
+        rp.onclick=()=>{ Fx.ensure(); const a=new Audio(AUDIO_BASE+'fd-'+slugId(it.t)+'-'+it.v+'.mp3');
+          a.onerror=()=>{ try{ const u=new SpeechSynthesisUtterance(it.es); u.lang='es-ES'; speechSynthesis.cancel(); speechSynthesis.speak(u); }catch(e){} };
+          a.play().catch(()=>{ try{ const u=new SpeechSynthesisUtterance(it.es); u.lang='es-ES'; speechSynthesis.cancel(); speechSynthesis.speak(u); }catch(e){} }); };
+        d.appendChild(rp); rv.appendChild(d);
+      });
+    } else {
+      const d=document.createElement('div'); d.className='allgood';
+      d.textContent='Perfect ear. Nothing slipped past you.'; rv.appendChild(d);
+    }
+    $('btnNextDrill').style.display = st.n < DRILLS.length ? '' : 'none';
+    show('scrFin');
+  }
+};
+
+function show(id){
+  ['scrHome','scrDrill','scrFin'].forEach(s=>$(s).classList.toggle('on', s===id));
+}
+function renderHome(){
+  const best=loadBest();
+  const g=$('drillGrid'); g.innerHTML='';
+  let done=0;
+  DRILLS.forEach(d=>{
+    const b=best['d'+d.n];
+    if(b) done++;
+    const card=document.createElement('button');
+    card.className='drill-card rise';
+    card.innerHTML='<span class="dc-l"><span class="n">Drill '+d.n+'</span><br><span class="m">12 phrases \u00b7 15s each</span></span>'
+      +'<span class="dc-r">'+(b ? (b.score+' pts<br>'+b.correct+' / 12') : '<span class="none">not yet</span>')+'</span>';
+    card.onclick=()=>{ Fx.ensure(); FD.startDrill(d.n); };
+    g.appendChild(card);
+  });
+  $('totalPill').textContent = done + ' / ' + DRILLS.length + ' drills';
+}
+
+$('btnPlay').onclick=()=>FD.playAudio();
+$('btnBack').onclick=()=>FD.home();
+$('btnNext').onclick=()=>FD.next();
+$('btnRetry').onclick=()=>FD.startDrill(FD.state ? FD.state.n : 1);
+$('btnNextDrill').onclick=()=>{ const n=FD.state ? FD.state.n : 0; FD.startDrill(Math.min(DRILLS.length, n+1)); };
+if('speechSynthesis' in window){ try{ speechSynthesis.getVoices(); }catch(e){} }
+renderHome();
+window.FD = FD;
+</script>
+</body>
+</html>
