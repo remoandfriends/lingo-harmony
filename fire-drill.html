@@ -26,8 +26,8 @@ body{
 .shell{max-width:640px;margin:0 auto;padding:20px 16px 60px;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
 header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:10px}
 .brand{display:flex;flex-direction:column;gap:2px}
-.brand .t{font-family:'Quicksand';font-weight:700;font-size:22px;letter-spacing:.02em}
-.brand .t em{font-style:normal;background:var(--mango);color:var(--ink);border-radius:6px;padding:0 6px;margin-left:2px}
+.brand .t{font-weight:900;font-size:24px;letter-spacing:-0.005em;text-transform:uppercase}
+.brand .t em{font-style:normal}
 .brand .s{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
 .pill{font-family:var(--mono);font-weight:700;font-size:11px;letter-spacing:.08em;background:var(--cream);border:2px solid var(--ink);border-radius:999px;padding:6px 13px;color:var(--ink)}
 .hdr-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
@@ -44,6 +44,12 @@ a.pill.hub-link:hover{color:var(--ink);border-color:var(--ink);background:var(--
 .drill-grid{display:grid;gap:12px}
 .drill-card{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--cream);border:var(--line) solid var(--ink);border-radius:16px;padding:14px 16px;cursor:pointer;transition:transform .15s ease, box-shadow .15s ease;text-align:left;width:100%;color:inherit;font:inherit}
 .drill-card:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--ink)}
+.drill-card.current{background:rgba(240,205,172,.55)}
+.drill-card.done{background:var(--green-wash)}
+.drill-card.locked{background:#EFE9DC;border-color:#B9B2A3;color:#9A948A;cursor:not-allowed}
+.drill-card.locked:hover{transform:none;box-shadow:none}
+.drill-card.locked .m{color:#9A948A}
+.drill-card .lock-ic{width:16px;height:16px;flex-shrink:0;color:#9A948A}
 .dc-l .n{font-family:'Quicksand';font-weight:700;font-size:16px}
 .dc-l .m{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.06em;margin-top:2px}
 .dc-r{font-family:var(--mono);font-weight:700;font-size:12px;color:var(--green);text-align:right;letter-spacing:.04em}
@@ -234,6 +240,7 @@ const FD = {
     show('scrHome'); renderHome();
   },
   startDrill(n){
+    if(n>1 && !loadBest()['d'+(n-1)]) return;
     const d = DRILLS.find(x=>x.n===n); if(!d) return;
     this.state = { n, i:0, score:0, correct:0, streak:0, bestStreak:0,
                    remaining:ITEM_SECS, running:false, resolved:false,
@@ -271,21 +278,35 @@ const FD = {
   },
   audioSrc(it){ return AUDIO_BASE + 'fd-' + slugId(it.t) + '-' + it.v + '.mp3'; },
   stopAudio(){
-    if(this.audio){ try{ this.audio.pause(); }catch(e){} this.audio=null; }
+    /* retire any in-flight playback: stale onended/onerror handlers and
+       pending play() rejections must never trigger the voice fallback */
+    this.playToken = (this.playToken||0) + 1;
+    if(this.audio){ try{ this.audio.onended=null; this.audio.onerror=null; this.audio.pause(); }catch(e){} this.audio=null; }
     if(this.utter){ try{ speechSynthesis.cancel(); }catch(e){} this.utter=null; }
     clearTimeout(this.safety);
   },
   playAudio(){
     const st=this.state, it=this.current(); if(!it || st.resolved) return;
     Fx.ensure(); this.stopAudio();
+    $('ttsChip').classList.remove('on');
+    const tok = (this.playToken = (this.playToken||0) + 1);
     const a = new Audio(this.audioSrc(it));
     this.audio = a;
-    a.onended = ()=>{ this.startClock(); };
-    a.onerror = ()=>{ this.speakFallback(it); };
-    a.play().catch(()=>this.speakFallback(it));
+    a.onended = ()=>{ if(tok===this.playToken) this.startClock(); };
+    a.onerror = ()=>{ this.fallbackOnce(tok, it); };
+    a.play().catch(()=>{ this.fallbackOnce(tok, it); });
     /* whatever happens, the drill never stalls */
     clearTimeout(this.safety);
     this.safety = setTimeout(()=>this.startClock(), 8000);
+  },
+  fallbackOnce(tok, it){
+    /* one voice only: ignore callbacks from replaced or intentionally
+       stopped audio, and never speak twice for the same attempt */
+    if(tok !== this.playToken) return;
+    if(this.fellBack === tok) return;
+    if(!this.state || this.state.resolved) return;
+    this.fellBack = tok;
+    this.speakFallback(it);
   },
   speakFallback(it){
     $('ttsChip').classList.add('on');
@@ -410,11 +431,15 @@ function renderHome(){
   DRILLS.forEach(d=>{
     const b=best['d'+d.n];
     if(b) done++;
+    const unlocked = d.n===1 || !!best['d'+(d.n-1)];
     const card=document.createElement('button');
-    card.className='drill-card rise';
+    card.className='drill-card rise' + (b ? ' done' : (unlocked ? ' current' : ' locked'));
+    card.disabled = !unlocked;
     card.innerHTML='<span class="dc-l"><span class="n">Drill '+d.n+'</span><br><span class="m">12 phrases \u00b7 15s each</span></span>'
-      +'<span class="dc-r">'+(b ? (b.score+' pts<br>'+b.correct+' / 12') : '<span class="none">not yet</span>')+'</span>';
-    card.onclick=()=>{ Fx.ensure(); FD.startDrill(d.n); };
+      +(unlocked
+        ? '<span class="dc-r">'+(b ? (b.score+' pts<br>'+b.correct+' / 12') : '<span class="none">not yet</span>')+'</span>'
+        : '<svg class="lock-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>');
+    if(unlocked) card.onclick=()=>{ Fx.ensure(); FD.startDrill(d.n); };
     g.appendChild(card);
   });
   $('totalPill').textContent = done + ' / ' + DRILLS.length + ' drills';
