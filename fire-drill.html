@@ -28,6 +28,9 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .brand .t em{font-style:normal;color:var(--ember)}
 .brand .s{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-faint)}
 .pill{font-family:var(--mono);font-size:11px;letter-spacing:.08em;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:999px;padding:7px 14px;color:var(--ink-faint)}
+.hdr-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+a.pill.hub-link{text-decoration:none;transition:.18s var(--ease)}
+a.pill.hub-link:hover{color:var(--ink);border-color:rgba(233,237,255,.35)}
 .panel{background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:var(--r-xl);padding:18px}
 .rise{animation:rise .5s var(--ease) both}
 @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
@@ -118,7 +121,10 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
       <div class="t">Fire<em>Drill</em></div>
       <div class="s">Misheard words &middot; Spanish listening</div>
     </div>
-    <div class="pill" id="totalPill">0 / 6 drills</div>
+    <div class="hdr-right">
+      <a class="pill hub-link" href="./transcription-challenge.html">&larr; All workouts</a>
+      <div class="pill" id="totalPill">0 / 6 drills</div>
+    </div>
   </header>
 
   <!-- HOME -->
