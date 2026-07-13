@@ -244,7 +244,7 @@ button.wo:hover { transform: translate(-3px, -3px); box-shadow: 6px 6px 0 var(--
 .ex.locked { background: #EFE9DC; border-color: #B9B2A3; color: #9A948A; cursor: not-allowed; }
 .ex .exnum { font-weight: 900; font-size: 12px; letter-spacing: .14em; color: var(--muted); }
 .ex.locked .exnum { color: #9A948A; }
-.ex h3 { font-family: var(--disp); font-style: italic; font-weight: 590; font-size: 23px; color: var(--azul); margin: 6px 0 4px; }
+.ex h3 { font-family: var(--mark); font-weight: 700; font-size: 20px; color: var(--ink); margin: 8px 0 5px; }
 .ex.locked h3 { color: #9A948A; }
 .ex .exmeta { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
 .ex .setdots { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -258,6 +258,11 @@ button.wo:hover { transform: translate(-3px, -3px); box-shadow: 6px 6px 0 var(--
   padding: 2px 9px; transform: rotate(3deg);
 }
 .ex .lock-ic { position: absolute; top: 16px; right: 16px; width: 16px; }
+#sprintGrid .ex:not(.locked) { background: var(--azul-wash); }
+#sprintGrid .ex:not(.locked) .exnum { color: var(--azul-deep); }
+#circuitGrid .ex:not(.locked) { background: #FBEBED; }
+#circuitGrid .ex:not(.locked) .exnum { color: var(--rosa-deep); }
+#sprintGrid .ex.full, #circuitGrid .ex.full { background: var(--green-wash); }
 .ex .besttime { position: absolute; bottom: 14px; right: 16px; font-size: 12px; font-weight: 800; color: var(--muted); }
 
 /* strength bloque best-time chip */
@@ -1099,7 +1104,7 @@ function renderSprintGrid() {
     const full = passed.length >= ex.ids.length;
     const wcs = ex.ids.map(id => byId[id].wc);
     const b = document.createElement("button");
-    b.className = "ex" + (prevFull ? "" : " locked");
+    b.className = "ex" + (prevFull ? "" : " locked") + (full ? " full" : "");
     b.disabled = !prevFull;
     b.innerHTML =
       '<span class="exnum">Exercise ' + ex.num + '</span>' +
@@ -1290,7 +1295,7 @@ function renderCircuitGrid() {
     const avail = circuitAvail(c.tier);
     const missing = list.length - avail;
     const b = document.createElement("button");
-    b.className = "ex" + (unlocked ? "" : " locked");
+    b.className = "ex" + (unlocked ? "" : " locked") + ((avail > 0 && done >= avail) ? " full" : "");
     b.disabled = !unlocked;
     b.innerHTML =
       '<span class="exnum">Circuit 0' + c.tier + ' \u00b7 ' + c.sub + '</span>' +
