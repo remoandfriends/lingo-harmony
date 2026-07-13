@@ -212,6 +212,11 @@ button.wo:hover { transform: translate(-3px, -3px); box-shadow: 6px 6px 0 var(--
   border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink);
 }
 .wo-soon .wo-note { font-size: 12.5px; color: var(--muted); font-weight: 700; }
+.wo-fuego { background: var(--navy); color: var(--cream); transform: rotate(-0.5deg); margin-top: 6px; }
+.wo-fuego:hover { transform: rotate(-0.5deg) translate(-3px, -3px); box-shadow: 6px 6px 0 var(--ink); }
+.wo-fuego .label { color: var(--mango); }
+.wo-fuego .wo-meter .bar { background: rgba(250,245,236,.18); }
+.wo-fuego .wo-meter .bar i { background: var(--mango); }
 
 /* guest note */
 .guest-note { text-align: center; font-size: 13.5px; color: var(--muted); padding: 0 0 34px; }
@@ -442,7 +447,7 @@ button.wo:hover { transform: translate(-3px, -3px); box-shadow: 6px 6px 0 var(--
 
 @media (max-width: 900px) {
   .wo-row { grid-template-columns: 1fr; }
-  .wo-rosa, .wo-soon { margin-top: 0; }
+  .wo-rosa, .wo-soon, .wo-fuego { margin-top: 0; }
   .ex-grid { grid-template-columns: 1fr 1fr; }
   .tc-marq { flex-direction: column; gap: 10px; padding: 18px 22px; }
   .tc-title { text-align: center; }
@@ -607,13 +612,15 @@ button.wo:hover { transform: translate(-3px, -3px); box-shadow: 6px 6px 0 var(--
             <svg width="20" height="12" viewBox="0 0 26 14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7 Q 12 4, 18 7"/><path d="M14 2 L 19 7 L 14 12"/></svg>
           </span>
         </button>
-        <div class="wo wo-soon rise r3">
-          <div class="tape">En construcci&oacute;n</div>
+        <a class="wo wo-fuego rise r3" href="./fire-drill.html" id="woFireDrill" aria-label="Fire Drill">
           <span class="label">Workout &middot; Reflejos</span>
           <h3>Fire Drill</h3>
-          <p>One word, five seconds, fifteen rounds. The trickiest sound-alike words in Spanish, back to back.</p>
-          <span class="wo-note">Opening soon</span>
-        </div>
+          <p>The trickiest sound-alikes in Spanish, back to back. Twelve traps per drill, fifteen seconds each. Name what your ear really heard.</p>
+          <span class="wo-meter"><span class="bar"><i id="meterFire"></i></span><span class="pct" id="pctFire">0%</span></span>
+          <span class="wo-go">Start the drill
+            <svg width="20" height="12" viewBox="0 0 26 14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7 Q 12 4, 18 7"/><path d="M14 2 L 19 7 L 14 12"/></svg>
+          </span>
+        </a>
       </div>
     </div>
     <p class="guest-note" id="guestNote" hidden>Playing as a guest. Your reps stay on this device. <a href="/#/entrar">Sign in</a> to keep them on your gym card.</p>
@@ -1013,12 +1020,24 @@ function strengthTotals() {
   CIRCUITS.forEach(c => { total += circuitAvail(c.tier); done += circuitDone(c.tier); });
   return { done, total };
 }
+const FIRE_DRILL_COUNT = 6;
+function fireDrillTotals() {
+  let done = 0;
+  try {
+    const b = JSON.parse(localStorage.getItem("fd_v1_best") || "{}");
+    for (let n = 1; n <= FIRE_DRILL_COUNT; n++) { if (b["d" + n]) done++; }
+  } catch (e) { done = 0; }
+  return { done, total: FIRE_DRILL_COUNT };
+}
 function paintLanding() {
   const s = sprintTotals(), t = strengthTotals();
   $("meterSprints").style.width = Math.round(100 * s.done / s.total) + "%";
   $("pctSprints").textContent = Math.round(100 * s.done / s.total) + "%";
   $("meterStrength").style.width = Math.round(100 * t.done / t.total) + "%";
   $("pctStrength").textContent = Math.round(100 * t.done / t.total) + "%";
+  const f = fireDrillTotals();
+  $("meterFire").style.width = Math.round(100 * f.done / f.total) + "%";
+  $("pctFire").textContent = Math.round(100 * f.done / f.total) + "%";
 }
 
 /* ============================================================
