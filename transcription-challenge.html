@@ -1654,11 +1654,23 @@ buildAccentStrip();
 buildKb();
 paintLanding();
 document.addEventListener("visibilitychange", () => { if (document.hidden) { musHome.pause(); musPlay.pause(); } else setMusic(musicWanted); });
-window.addEventListener("pagehide", () => { musHome.pause(); musPlay.pause(); });
+window.addEventListener("pagehide", () => {
+  try { if (musHome.currentTime > 0) sessionStorage.setItem("lh_mus_pos", JSON.stringify({ t: musHome.currentTime, at: Date.now() })); } catch (_) {}
+  musHome.pause(); musPlay.pause();
+});
 const origShow = show;
 show = function (v) { origShow(v); if (v === "landing") paintLanding(); };
 runIntro();
 initAuth();
+/* resume the ambient where the last page left it */
+try {
+  const mp = JSON.parse(sessionStorage.getItem("lh_mus_pos") || "null");
+  if (mp && (Date.now() - mp.at) / 1000 < 45) {
+    const mAge = (Date.now() - mp.at) / 1000;
+    const mSeek = () => { try { const d = musHome.duration; if (d && isFinite(d)) musHome.currentTime = (mp.t + mAge) % d; } catch (_) {} };
+    if (musHome.readyState >= 1) mSeek(); else musHome.addEventListener("loadedmetadata", mSeek, { once: true });
+  }
+} catch (_) {}
 setMusic("home");
 
 </script>
