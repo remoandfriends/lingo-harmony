@@ -859,7 +859,18 @@ const SFX_URL = AUDIO_CDN + 'sfx/';
 const SFX_FILES = { right:'right.mp3', wrong:'wrong.mp3', hint:'hint.mp3', win:'win.mp3', levelfail:'level-failed.mp3', harmonics:'harmonics.mp3', pop:'pop.mp3' };
 const SFX_VOL = { right:0.7, wrong:0.85, hint:0.65, win:0.9, levelfail:0.8, harmonics:0.8, pop:0.6 };
 const MASK_VOICE = false;
-const HIT_RADIUS = 0.44;          // pointer registers only near a cell's center; brushing an edge selects nothing
+const HIT_RADIUS = 0.44;          // mouse registers only near a cell's center; brushing an edge selects nothing
+/* Touch tracing works from cell centers, not cell boxes. A finger is wide,
+   wobbly, and hides its own target, so the box it happens to sit in is a poor
+   signal of intent. Reaches below are fractions of the center-to-center pitch. */
+const TOUCH_START_REACH = 0.52;   // first contact: generous, there is no path to mis-grab yet
+const TOUCH_REACH = 0.38;         // mid-drag pickup: only near a center, so corners stay neutral
+const TOUCH_WOBBLE_PERP = 0.33;   // while the finger still rides its heading line, side grazes do not count
+const TOUCH_BACK_REACH = 0.45;    // sliding back over your own path retracts it
+const TOUCH_ASSIST_DOT = 0.86;    // heading must point within about 30 degrees of a neighbor
+const TOUCH_STRAIGHT = 0.72;      // net drift over mean speed: 1 is a ruler line, wobble drags it down
+const TOUCH_ASSIST_PROJ = 0.55;   // and the finger must be past 55% of the way toward it
+const TOUCH_ASSIST_PERP = 0.45;   // without straying off that line
 const MAX_GRID = 14;              // ceiling so target words always have room
 const HINT_COST = { list:10, letters:20 };  // seconds removed from the clock
 const FREEZE_SECS = 15;      // the clock holds its breath this long
@@ -1572,24 +1583,117 @@ function drawTrace(){
 }
 
 /* ============================================================
-   INTERACTION (pointer based, inner hit radius)
-   A cell only registers when the pointer is inside the central
-   part of that cell, not anywhere in its box. This stops the
-   accidental selections that came from edge to edge proximity,
-   which matters most on touch screens.
+   INTERACTION
+   Mouse: unchanged. The cursor is exact, so elementFromPoint plus
+   an inner radius is right, and desktop behavior stays as it was.
+   Touch: a geometry engine. Cell centers are measured once per
+   gesture, and three rules read the finger's intent:
+     1. near a center: pick that cell (corners stay neutral)
+     2. near your own path: retract to that cell in one motion
+     3. in the no man's land between centers: if the finger has a
+        steady heading, carry the trace to the neighbor it points
+        at. This is what makes diagonals feel effortless: a 45
+        degree heading matches the diagonal neighbor and nothing
+        else, so grazing an orthogonal cell's box no longer steals
+        the trace.
    ============================================================ */
-function pointerCell(x,y,type){
-  /* deliberate selection only: the pointer must be near a cell's center.
-     A finger is wider than a cursor and hides what it touches, so touch
-     gets a more forgiving reach than a mouse; gaps and grazed corners
-     still select nothing, and a null leaves the trace as it was. */
+const TDRAG = { cx:null, cy:null, pitch:0, hx:0, hy:0, sm:0, n:0, px:0, py:0, ok:false };
+function touchGeoBuild(){
+  TDRAG.ok=false;
+  if(!state || !state.size) return;
+  const N=state.size, cells=document.querySelectorAll('#grid .cell');
+  if(cells.length!==N*N) return;
+  TDRAG.cx=new Float32Array(N*N); TDRAG.cy=new Float32Array(N*N);
+  cells.forEach(c=>{
+    const r=c.getBoundingClientRect(), i=+c.dataset.idx;
+    TDRAG.cx[i]=r.left+r.width/2; TDRAG.cy[i]=r.top+r.height/2;
+  });
+  TDRAG.pitch = N>1 ? Math.hypot(TDRAG.cx[1]-TDRAG.cx[0], TDRAG.cy[1]-TDRAG.cy[0]) : 40;
+  TDRAG.ok = TDRAG.pitch > 4;
+}
+function touchHeadingReset(x,y){ TDRAG.hx=0; TDRAG.hy=0; TDRAG.sm=0; TDRAG.n=0; TDRAG.px=x; TDRAG.py=y; }
+function touchHeadingFeed(x,y){
+  /* raw displacement average, not unit vectors: zero mean wobble cancels
+     itself out while real travel accumulates, so the heading stays honest
+     under a shaky thumb. sm tracks mean speed; hx,hy the mean vector. */
+  const dx=(x-TDRAG.px)/TDRAG.pitch, dy=(y-TDRAG.py)/TDRAG.pitch;
+  TDRAG.px=x; TDRAG.py=y;
+  const m=Math.hypot(dx,dy);
+  if(m*TDRAG.pitch<1.2) return;                      // sensor noise, not motion
+  const a=0.12;                                      // long memory: a full wobble wave cancels itself
+  TDRAG.n++;
+  TDRAG.hx+=a*(dx-TDRAG.hx);
+  TDRAG.hy+=a*(dy-TDRAG.hy);
+  TDRAG.sm+=a*(m-TDRAG.sm);
+}
+function touchHeading(){
+  if(TDRAG.n<5) return null;                                     // too young to trust
+  const hm=Math.hypot(TDRAG.hx,TDRAG.hy);
+  if(TDRAG.sm<0.02 || hm/TDRAG.sm<TOUCH_STRAIGHT) return null;   // no trusted line right now
+  return { ux:TDRAG.hx/hm, uy:TDRAG.hy/hm };
+}
+function touchCell(x,y,starting){
+  if(!TDRAG.ok) touchGeoBuild();
+  if(!TDRAG.ok || !state) return null;
+  const g=document.getElementById('grid').getBoundingClientRect();
+  const slack=TDRAG.pitch*0.6;
+  if(x<g.left-slack||x>g.right+slack||y<g.top-slack||y>g.bottom+slack) return null;
+  let near=-1, bd=Infinity;
+  for(let i=0;i<TDRAG.cx.length;i++){
+    const d=Math.hypot(x-TDRAG.cx[i], y-TDRAG.cy[i]);
+    if(d<bd){ bd=d; near=i; }
+  }
+  const nd=bd/TDRAG.pitch;
+  if(starting) return nd<=TOUCH_START_REACH ? near : null;
+  const trace=state.trace, last=trace[trace.length-1];
+  if(trace.indexOf(near)!==-1) return nd<=TOUCH_BACK_REACH ? near : null;  // own path: retract or ignore
+  const hm0=Math.hypot(TDRAG.hx,TDRAG.hy);
+  if(nd<=TOUCH_REACH){
+    /* wobble gate: if the finger is clearly still traveling its heading line,
+       a momentary graze of a cell off that line is tremor, not intent. The
+       instant the finger actually leaves the line, pickups behave normally. */
+    const h0=touchHeading();
+    if(last!==undefined && h0){
+      const rx0=x-TDRAG.cx[last], ry0=y-TDRAG.cy[last];
+      const perpH=Math.abs(rx0*h0.uy-ry0*h0.ux)/TDRAG.pitch;
+      const wx=TDRAG.cx[near]-TDRAG.cx[last], wy=TDRAG.cy[near]-TDRAG.cy[last];
+      const wm=Math.hypot(wx,wy)||1;
+      const dotC=h0.ux*(wx/wm)+h0.uy*(wy/wm);
+      if(dotC<0.92 && perpH<TOUCH_WOBBLE_PERP) return null;
+    }
+    return near;
+  }
+  /* neutral zone: a steady heading carries the trace to the neighbor it points at */
+  const h=touchHeading();
+  if(last===undefined || !h) return null;        // assist only follows a heading it can trust
+  const N=state.size, lr=Math.floor(last/N), lc=last%N, ux=h.ux, uy=h.uy;
+  let pick=-1, bestDot=TOUCH_ASSIST_DOT;
+  for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
+    if(!dr&&!dc) continue;
+    const r=lr+dr, c=lc+dc;
+    if(r<0||c<0||r>=N||c>=N) continue;
+    const j=r*N+c;
+    if(trace.indexOf(j)!==-1) continue;
+    const vx=TDRAG.cx[j]-TDRAG.cx[last], vy=TDRAG.cy[j]-TDRAG.cy[last];
+    const vm=Math.hypot(vx,vy)||1;
+    const dot=ux*(vx/vm)+uy*(vy/vm);
+    if(dot>bestDot){
+      const rx=x-TDRAG.cx[last], ry=y-TDRAG.cy[last];
+      const proj=(rx*vx+ry*vy)/(vm*vm);                       // fraction of the way there
+      const perp=Math.abs(rx*(vy/vm)-ry*(vx/vm))/TDRAG.pitch; // drift off that line
+      if(proj>=TOUCH_ASSIST_PROJ && perp<=TOUCH_ASSIST_PERP){ bestDot=dot; pick=j; }
+    }
+  }
+  return pick===-1 ? null : pick;
+}
+function pointerCell(x,y,type,starting){
+  if(type!=='mouse') return touchCell(x,y,!!starting);
   const el=document.elementFromPoint(x,y);
   if(!el || !el.classList.contains('cell')) return null;
   const r=el.getBoundingClientRect();
   const dx=(x-(r.left+r.width/2))/r.width;
   const dy=(y-(r.top+r.height/2))/r.height;
-  const reach = type === 'touch' ? 0.58 : HIT_RADIUS;
-  return Math.hypot(dx,dy) <= reach ? +el.dataset.idx : null;
+  return Math.hypot(dx,dy) <= HIT_RADIUS ? +el.dataset.idx : null;
 }
 function beginTrace(idx){
   startClock();
@@ -1598,8 +1702,12 @@ function beginTrace(idx){
 function extendTrace(idx){
   const last=state.trace[state.trace.length-1];
   if(last===idx) return;
-  if(state.trace.includes(idx)){
-    if(state.trace.length>=2 && state.trace[state.trace.length-2]===idx){ state.trace.pop(); updateCells(); updateReadout(); drawTrace(); }
+  const back=state.trace.indexOf(idx);
+  if(back!==-1){
+    /* sliding back over the path retracts it to that cell in one motion;
+       undoing a stray letter no longer means stepping back square by square */
+    state.trace.length=back+1;
+    updateCells(); updateReadout(); drawTrace();
     return;
   }
   if(last!==undefined && !areAdjacent(last,idx,state.size)){
@@ -1631,7 +1739,8 @@ function onPointerDown(e){
     return;
   }
   if(e.pointerType==='mouse' && e.button!==0) return;
-  const idx=pointerCell(e.clientX,e.clientY,e.pointerType);
+  if(e.pointerType!=='mouse'){ touchGeoBuild(); touchHeadingReset(e.clientX,e.clientY); }
+  const idx=pointerCell(e.clientX,e.clientY,e.pointerType,true);
   if(idx==null || state.ended) return;
   e.preventDefault();
   state.pointerId=e.pointerId;
@@ -1640,11 +1749,16 @@ function onPointerDown(e){
 }
 function onPointerMove(e){
   if(!state||!state.dragging) return;
-  const idx=pointerCell(e.clientX,e.clientY,e.pointerType);
+  if(state.pointerId!=null && e.pointerId!==state.pointerId) return;   // a second finger cannot warp the trace
+  if(e.pointerType!=='mouse') touchHeadingFeed(e.clientX,e.clientY);
+  const idx=pointerCell(e.clientX,e.clientY,e.pointerType,false);
   if(idx==null) return;
   extendTrace(idx);
 }
-function onPointerUp(e){ endTrace(); }
+function onPointerUp(e){
+  if(state && state.dragging && state.pointerId!=null && e.pointerId!==state.pointerId) return;
+  endTrace();
+}
 
 /* ============================================================
    SUBMIT
