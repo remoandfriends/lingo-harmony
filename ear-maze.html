@@ -532,6 +532,8 @@ body{overscroll-behavior-y:none;
   .grid-wrap{padding:6px}
   .grid-svg{inset:6px}
   .grid{gap:4px}
+  /* the zoomed board is allowed to reach past the panel's side padding */
+  .stage{overflow:visible}
 }
 </style>
 </head>
@@ -847,6 +849,37 @@ function fitGrid(){
   g.style.maxWidth = '100%';
   g.style.setProperty('--cellF', Math.max(13, Math.min(36, Math.round(cell * 0.44))) + 'px');
   /* the bar and strip match the board width so the panel hugs the board */
+  /* phone zoom: the board is magnified as one piece, letters, gaps and
+     frame together, out to the screen edges. Nothing inside it changes
+     shape; it is simply seen closer. Capped so the whole grid stays on
+     screen, and never below 1. transform does not disturb layout math,
+     so the extra visual height is handed back as a bottom margin. */
+  let z = 1;
+  if (nrw && wrapEl){
+    /* layout viewport width: immune to the visual viewport zooming out */
+    const vw = document.documentElement.clientWidth || window.innerWidth;
+    const naturalW = cell * N + gap * (N - 1) + framePad + 2;
+    const naturalH = naturalW;
+    const zW = (vw - 4) / naturalW;
+    const zH = availH / naturalH;
+    z = Math.max(1, Math.min(1.25, zW, zH));
+    z = Math.round(z * 1000) / 1000;
+    if (z > 1.005){
+      /* center the magnified board on the screen itself, not on whatever
+         box the panel happens to give it */
+      wrapEl.style.transform = '';
+      const wr = wrapEl.getBoundingClientRect();
+      const tx = Math.round((vw / 2 - (wr.left + wr.right) / 2) * 10) / 10;
+      wrapEl.style.transform = 'translateX(' + tx + 'px) scale(' + z + ')';
+      wrapEl.style.transformOrigin = 'top center';
+      wrapEl.style.marginBottom = Math.round((z - 1) * naturalH) + 'px';
+    } else {
+      z = 1;
+      wrapEl.style.transform = ''; wrapEl.style.transformOrigin = ''; wrapEl.style.marginBottom = '';
+    }
+  } else if (wrapEl){
+    wrapEl.style.transform = ''; wrapEl.style.transformOrigin = ''; wrapEl.style.marginBottom = '';
+  }
   host.style.setProperty('--boardW', (cell * N + gap * (N - 1) + 22) + 'px');
 }
 window.addEventListener('resize', ()=>{ try { fitGrid(); } catch(e){} });
@@ -864,9 +897,11 @@ const HIT_RADIUS = 0.44;          // mouse registers only near a cell's center; 
    wobbly, and hides its own target, so the box it happens to sit in is a poor
    signal of intent. Reaches below are fractions of the center-to-center pitch. */
 const TOUCH_START_REACH = 0.52;   // first contact: generous, there is no path to mis-grab yet
-const TOUCH_REACH = 0.38;         // mid-drag pickup: only near a center, so corners stay neutral
+const TOUCH_REACH = 0.42;         // mid-drag pickup: only near a center, so corners stay neutral
 const TOUCH_WOBBLE_PERP = 0.33;   // while the finger still rides its heading line, side grazes do not count
-const TOUCH_BACK_REACH = 0.45;    // sliding back over your own path retracts it
+const TOUCH_BACK_REACH = 0.42;    // deliberate placement on your own path retracts it
+const TOUCH_BACK_LOOSE = 0.60;    // once motion clearly points back along the path, retraction gets a wide target
+const TOUCH_LIFT = 0.38;          // the selection point floats this far above the fingertip (capped at 22px)
 const TOUCH_ASSIST_DOT = 0.86;    // heading must point within about 30 degrees of a neighbor
 const TOUCH_STRAIGHT = 0.72;      // net drift over mean speed: 1 is a ruler line, wobble drags it down
 const TOUCH_ASSIST_PROJ = 0.55;   // and the finger must be past 55% of the way toward it
@@ -1597,7 +1632,7 @@ function drawTrace(){
         else, so grazing an orthogonal cell's box no longer steals
         the trace.
    ============================================================ */
-const TDRAG = { cx:null, cy:null, pitch:0, hx:0, hy:0, sm:0, n:0, px:0, py:0, ok:false };
+const TDRAG = { cx:null, cy:null, pitch:0, lift:0, hx:0, hy:0, fx:0, fy:0, sm:0, n:0, px:0, py:0, x0:0, y0:0, ok:false };
 function touchGeoBuild(){
   TDRAG.ok=false;
   if(!state || !state.size) return;
@@ -1609,9 +1644,10 @@ function touchGeoBuild(){
     TDRAG.cx[i]=r.left+r.width/2; TDRAG.cy[i]=r.top+r.height/2;
   });
   TDRAG.pitch = N>1 ? Math.hypot(TDRAG.cx[1]-TDRAG.cx[0], TDRAG.cy[1]-TDRAG.cy[0]) : 40;
+  TDRAG.lift = Math.min(22, TDRAG.pitch*TOUCH_LIFT);
   TDRAG.ok = TDRAG.pitch > 4;
 }
-function touchHeadingReset(x,y){ TDRAG.hx=0; TDRAG.hy=0; TDRAG.sm=0; TDRAG.n=0; TDRAG.px=x; TDRAG.py=y; }
+function touchHeadingReset(x,y){ TDRAG.hx=0; TDRAG.hy=0; TDRAG.fx=0; TDRAG.fy=0; TDRAG.sm=0; TDRAG.n=0; TDRAG.px=x; TDRAG.py=y; TDRAG.x0=x; TDRAG.y0=y; }
 function touchHeadingFeed(x,y){
   /* raw displacement average, not unit vectors: zero mean wobble cancels
      itself out while real travel accumulates, so the heading stays honest
@@ -1624,17 +1660,29 @@ function touchHeadingFeed(x,y){
   TDRAG.n++;
   TDRAG.hx+=a*(dx-TDRAG.hx);
   TDRAG.hy+=a*(dy-TDRAG.hy);
+  TDRAG.fx+=0.5*(dx-TDRAG.fx);                       // fast memory: notices a reversal within an event or two
+  TDRAG.fy+=0.5*(dy-TDRAG.fy);
   TDRAG.sm+=a*(m-TDRAG.sm);
 }
 function touchHeading(){
-  if(TDRAG.n<5) return null;                                     // too young to trust
-  const hm=Math.hypot(TDRAG.hx,TDRAG.hy);
-  if(TDRAG.sm<0.02 || hm/TDRAG.sm<TOUCH_STRAIGHT) return null;   // no trusted line right now
-  return { ux:TDRAG.hx/hm, uy:TDRAG.hy/hm };
+  if(TDRAG.n>=5){
+    const hm=Math.hypot(TDRAG.hx,TDRAG.hy);
+    if(TDRAG.sm>=0.02 && hm/TDRAG.sm>=TOUCH_STRAIGHT) return { ux:TDRAG.hx/hm, uy:TDRAG.hy/hm, firm:true };
+    if(TDRAG.n>=8) return null;                                  // long average is old enough to be the only judge
+  }
+  /* early in a drag the long average is too young to trust, so the straight
+     line from the touch-down point stands in once real travel exists */
+  const dx=TDRAG.px-TDRAG.x0, dy=TDRAG.py-TDRAG.y0, m=Math.hypot(dx,dy);
+  if(m>=TDRAG.pitch*0.6) return { ux:dx/m, uy:dy/m, firm:false };
+  return null;
 }
 function touchCell(x,y,starting){
   if(!TDRAG.ok) touchGeoBuild();
   if(!TDRAG.ok || !state) return null;
+  /* the selection point floats a little above the fingertip. A finger pad
+     lands below the letter it aims for and hides it completely; lifting the
+     point puts selection where the player is actually looking. */
+  y-=TDRAG.lift;
   const g=document.getElementById('grid').getBoundingClientRect();
   const slack=TDRAG.pitch*0.6;
   if(x<g.left-slack||x>g.right+slack||y<g.top-slack||y>g.bottom+slack) return null;
@@ -1646,8 +1694,21 @@ function touchCell(x,y,starting){
   const nd=bd/TDRAG.pitch;
   if(starting) return nd<=TOUCH_START_REACH ? near : null;
   const trace=state.trace, last=trace[trace.length-1];
-  if(trace.indexOf(near)!==-1) return nd<=TOUCH_BACK_REACH ? near : null;  // own path: retract or ignore
-  const hm0=Math.hypot(TDRAG.hx,TDRAG.hy);
+  if(trace.indexOf(near)!==-1){
+    if(near===last) return nd<=TOUCH_BACK_LOOSE ? near : null;
+    if(nd<=TOUCH_BACK_REACH) return near;              // deliberate placement on your own path
+    if(nd<=TOUCH_BACK_LOOSE){
+      /* retreat detection: the instant motion turns back along the path,
+         retraction gets a wide target. Undoing should be the easy part. */
+      const fm=Math.hypot(TDRAG.fx,TDRAG.fy);
+      if(fm>0.02 && last!==undefined){
+        const bx=TDRAG.cx[near]-TDRAG.cx[last], by=TDRAG.cy[near]-TDRAG.cy[last];
+        const bm=Math.hypot(bx,by)||1;
+        if((TDRAG.fx*bx+TDRAG.fy*by)/(fm*bm)>=0.3) return near;
+      }
+    }
+    return null;
+  }
   if(nd<=TOUCH_REACH){
     /* wobble gate: if the finger is clearly still traveling its heading line,
        a momentary graze of a cell off that line is tremor, not intent. The
@@ -1665,7 +1726,7 @@ function touchCell(x,y,starting){
   }
   /* neutral zone: a steady heading carries the trace to the neighbor it points at */
   const h=touchHeading();
-  if(last===undefined || !h) return null;        // assist only follows a heading it can trust
+  if(last===undefined || !h || !h.firm) return null;   // assist only follows a settled heading
   const N=state.size, lr=Math.floor(last/N), lc=last%N, ux=h.ux, uy=h.uy;
   let pick=-1, bestDot=TOUCH_ASSIST_DOT;
   for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
