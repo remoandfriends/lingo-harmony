@@ -698,6 +698,8 @@ body[data-view="tenses"] .view-tenses { display: block; }
 .fg-chip[aria-pressed="true"].tvc-adv { background: var(--navy); color: var(--cream); }
 
 .tv-card { min-width: 0; }
+.tv-card .fg-sign { min-height: 80px; justify-content: center; }
+.tv-card .fg-blend { font-size: 17px; }
 .tv-card[data-hide="1"] { display: none; }
 .tv-en { font-size: 13.5px; opacity: .72; margin-top: 2px; }
 .tv-flip {
@@ -1216,7 +1218,7 @@ body[data-view="tenses"] .view-tenses { display: block; }
       <span class="label fg-kicker">Guías de referencia</span>
       <div class="guide-head">
         <h2>Tiempos Verbales</h2>
-        <span class="sub">Every tense on one wall: what it does, the move, one real example. Open a table when you want the full grid.</span>
+        <span class="sub">Every tense on one wall: what it does, the sound of it, one real example. Every card opens into its full conjugation table.</span>
       </div>
       <div class="fg-tools">
         <div class="fg-chips" id="tvChips" role="group" aria-label="Filter by time">
@@ -1232,8 +1234,8 @@ body[data-view="tenses"] .view-tenses { display: block; }
         <article class="fg-card tv-card" data-g="pres">
           <div class="fg-top"><span class="fg-tag tvt-pres">Presente</span></div>
           <h3 class="fg-phrase">Presente</h3>
-          <p class="fg-gloss">What happens now, or every day.</p>
-          <div class="fg-sign"><span class="fg-sign-lab">The move</span><span class="fg-blend">Drop the AR / ER / IR, add the endings</span></div>
+          <p class="fg-gloss">What happens now, or every day. Drop the AR / ER / IR and add the endings.</p>
+          <div class="fg-sign"><span class="fg-sign-lab">The move</span><span class="fg-blend">trabajo · como · vivo</span></div>
           <div class="fg-ex"><span class="fg-lab">In the wild</span>
             <div class="fg-es">Yo trabajo en una oficina.</div>
             <div class="tv-en">I work in an office.</div>
@@ -1254,36 +1256,56 @@ body[data-view="tenses"] .view-tenses { display: block; }
           <div class="fg-top"><span class="fg-tag tvt-pas">Pasado</span></div>
           <h3 class="fg-phrase">Pretérito</h3>
           <p class="fg-gloss">Done and dated. One finished action: ayer, anoche, el sábado.</p>
-          <div class="fg-sign"><span class="fg-sign-lab">Endings</span><span class="fg-blend">AR: -é -aste -ó -amos -asteis -aron<br />ER / IR: -í -iste -ió -imos -isteis -ieron</span></div>
+          <div class="fg-sign"><span class="fg-sign-lab">The move</span><span class="fg-blend">hablé · comí · viví</span></div>
           <div class="fg-ex"><span class="fg-lab">In the wild</span>
             <div class="fg-es">Hablé con mi profesor ayer.</div>
             <div class="tv-en">I spoke with my teacher yesterday.</div>
           </div>
           <div class="fg-note">Watch: ser and ir share fui. Estar goes estuve.</div>
+          <button type="button" class="tv-flip" aria-expanded="false">Conjugation table <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="tv-table-wrap"><table class="tv-table">
+            <tr><th></th><th>hablar</th><th>comer</th><th>vivir</th></tr>
+            <tr><td>yo</td><td>hablé</td><td>comí</td><td>viví</td></tr>
+            <tr><td>tú</td><td>hablaste</td><td>comiste</td><td>viviste</td></tr>
+            <tr><td>él / ella / Ud.</td><td>habló</td><td>comió</td><td>vivió</td></tr>
+            <tr><td>nosotros</td><td>hablamos</td><td>comimos</td><td>vivimos</td></tr>
+            <tr><td>vosotros</td><td>hablasteis</td><td>comisteis</td><td>vivisteis</td></tr>
+            <tr><td>ellos / Uds.</td><td>hablaron</td><td>comieron</td><td>vivieron</td></tr>
+          </table></div>
         </article>
 
         <article class="fg-card tv-card" data-g="pas">
           <div class="fg-top"><span class="fg-tag tvt-pas">Pasado</span></div>
           <h3 class="fg-phrase">Imperfecto</h3>
           <p class="fg-gloss">The past on repeat, or the scene behind it: used to, was doing, it was cold, I was tired.</p>
-          <div class="fg-sign"><span class="fg-sign-lab">Endings</span><span class="fg-blend">AR: -aba -abas -aba -ábamos -abais -aban<br />ER / IR: -ía -ías -ía -íamos -íais -ían</span></div>
+          <div class="fg-sign"><span class="fg-sign-lab">The move</span><span class="fg-blend">hablaba · comía · vivía</span></div>
           <div class="fg-ex"><span class="fg-lab">In the wild</span>
             <div class="fg-es">Yo vivía en México de niño.</div>
             <div class="tv-en">I used to live in Mexico as a child.</div>
           </div>
           <div class="fg-note">Watch: ser goes era, ir goes iba.</div>
+          <button type="button" class="tv-flip" aria-expanded="false">Conjugation table <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="tv-table-wrap"><table class="tv-table">
+            <tr><th></th><th>hablar</th><th>comer</th><th>vivir</th></tr>
+            <tr><td>yo</td><td>hablaba</td><td>comía</td><td>vivía</td></tr>
+            <tr><td>tú</td><td>hablabas</td><td>comías</td><td>vivías</td></tr>
+            <tr><td>él / ella / Ud.</td><td>hablaba</td><td>comía</td><td>vivía</td></tr>
+            <tr><td>nosotros</td><td>hablábamos</td><td>comíamos</td><td>vivíamos</td></tr>
+            <tr><td>vosotros</td><td>hablabais</td><td>comíais</td><td>vivíais</td></tr>
+            <tr><td>ellos / Uds.</td><td>hablaban</td><td>comían</td><td>vivían</td></tr>
+          </table></div>
         </article>
 
         <article class="fg-card tv-card" data-g="pas">
           <div class="fg-top"><span class="fg-tag tvt-pas">Pasado</span></div>
           <h3 class="fg-phrase">Perfecto</h3>
-          <p class="fg-gloss">Past that still touches now. Started back then, matters today.</p>
-          <div class="fg-sign"><span class="fg-sign-lab">The move</span><span class="fg-blend">haber + participio: -ado / -ido</span></div>
+          <p class="fg-gloss">Past that still touches now. Haber plus the participle in -ado or -ido.</p>
+          <div class="fg-sign"><span class="fg-sign-lab">The move</span><span class="fg-blend">he trabajado · has comido</span></div>
           <div class="fg-ex"><span class="fg-lab">In the wild</span>
             <div class="fg-es">He trabajado mucho hoy.</div>
             <div class="tv-en">I have worked a lot today.</div>
           </div>
-          <button type="button" class="tv-flip" aria-expanded="false">Haber table <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" class="tv-flip" aria-expanded="false">Conjugation table <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <div class="tv-table-wrap"><table class="tv-table">
             <tr><th></th><th>haber</th><th>+ participio</th></tr>
             <tr><td>yo</td><td>he</td><td>trabajado</td></tr>
@@ -1299,47 +1321,86 @@ body[data-view="tenses"] .view-tenses { display: block; }
           <div class="fg-top"><span class="fg-tag tvt-fut">Futuro</span></div>
           <h3 class="fg-phrase">Futuro simple</h3>
           <p class="fg-gloss">Will. Keep the whole infinitive and hang the endings on the end.</p>
-          <div class="fg-sign"><span class="fg-sign-lab">The move</span><span class="fg-blend">infinitivo + é ás á emos éis án</span></div>
+          <div class="fg-sign"><span class="fg-sign-lab">The move</span><span class="fg-blend">hablaré · comerás · vivirán</span></div>
           <div class="fg-ex"><span class="fg-lab">In the wild</span>
             <div class="fg-es">Hablaré con mi profesor mañana.</div>
             <div class="tv-en">I will speak with my teacher tomorrow.</div>
           </div>
           <div class="fg-note">Watch the new stems: tendré, haré, diré, podré, sabré.</div>
+          <button type="button" class="tv-flip" aria-expanded="false">Conjugation table <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="tv-table-wrap"><table class="tv-table">
+            <tr><th></th><th>hablar</th><th>comer</th><th>vivir</th></tr>
+            <tr><td>yo</td><td>hablaré</td><td>comeré</td><td>viviré</td></tr>
+            <tr><td>tú</td><td>hablarás</td><td>comerás</td><td>vivirás</td></tr>
+            <tr><td>él / ella / Ud.</td><td>hablará</td><td>comerá</td><td>vivirá</td></tr>
+            <tr><td>nosotros</td><td>hablaremos</td><td>comeremos</td><td>viviremos</td></tr>
+            <tr><td>vosotros</td><td>hablaréis</td><td>comeréis</td><td>viviréis</td></tr>
+            <tr><td>ellos / Uds.</td><td>hablarán</td><td>comerán</td><td>vivirán</td></tr>
+          </table></div>
         </article>
 
         <article class="fg-card tv-card" data-g="fut">
           <div class="fg-top"><span class="fg-tag tvt-fut">Futuro</span></div>
           <h3 class="fg-phrase">Ir a + infinitivo</h3>
           <p class="fg-gloss">The future people actually say out loud.</p>
-          <div class="fg-sign"><span class="fg-sign-lab">The move</span><span class="fg-blend">voy · vas · va · vamos · vais · van + a + infinitivo</span></div>
+          <div class="fg-sign"><span class="fg-sign-lab">The move</span><span class="fg-blend">voy a comer · vamos a trabajar</span></div>
           <div class="fg-ex"><span class="fg-lab">In the wild</span>
             <div class="fg-es">Voy a hablar con mi profesor mañana.</div>
             <div class="tv-en">I am going to speak with my teacher tomorrow.</div>
           </div>
+          <button type="button" class="tv-flip" aria-expanded="false">Conjugation table <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="tv-table-wrap"><table class="tv-table">
+            <tr><th></th><th>ir</th><th>+ a + infinitivo</th></tr>
+            <tr><td>yo</td><td>voy</td><td>a hablar</td></tr>
+            <tr><td>tú</td><td>vas</td><td>a comer</td></tr>
+            <tr><td>él / ella / Ud.</td><td>va</td><td>a vivir</td></tr>
+            <tr><td>nosotros</td><td>vamos</td><td>a hablar</td></tr>
+            <tr><td>vosotros</td><td>vais</td><td>a comer</td></tr>
+            <tr><td>ellos / Uds.</td><td>van</td><td>a vivir</td></tr>
+          </table></div>
         </article>
 
         <article class="fg-card tv-card" data-g="adv">
           <div class="fg-top"><span class="fg-tag tvt-adv">Avanzadas</span></div>
           <h3 class="fg-phrase">Gerundio</h3>
-          <p class="fg-gloss">Happening right now, still going, or going for a while.</p>
-          <div class="fg-sign"><span class="fg-sign-lab">The move</span><span class="fg-blend">estar · seguir · llevar + tiempo, then -ando / -iendo</span></div>
+          <p class="fg-gloss">Happening right now, still going, or going for a while: estar, seguir, llevar + tiempo.</p>
+          <div class="fg-sign"><span class="fg-sign-lab">The move</span><span class="fg-blend">estoy hablando · sigo aprendiendo</span></div>
           <div class="fg-ex"><span class="fg-lab">In the wild</span>
             <div class="fg-es">Estoy escribiendo un tango.</div>
             <div class="tv-en">I am writing a tango.</div>
           </div>
-          <div class="fg-note">Watch: durmiendo, pidiendo, leyendo, oyendo.</div>
+          <button type="button" class="tv-flip" aria-expanded="false">Conjugation table <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="tv-table-wrap"><table class="tv-table">
+            <tr><th>verbo</th><th>gerundio</th></tr>
+            <tr><td>trabajar</td><td>trabajando</td></tr>
+            <tr><td>comer</td><td>comiendo</td></tr>
+            <tr><td>vivir</td><td>viviendo</td></tr>
+            <tr><td>dormir</td><td>durmiendo</td></tr>
+            <tr><td>pedir</td><td>pidiendo</td></tr>
+            <tr><td>leer</td><td>leyendo</td></tr>
+          </table></div>
         </article>
 
         <article class="fg-card tv-card" data-g="adv">
           <div class="fg-top"><span class="fg-tag tvt-adv">Avanzadas</span></div>
           <h3 class="fg-phrase">Condicional</h3>
           <p class="fg-gloss">Would. Same endings for every single verb, glued to the infinitive.</p>
-          <div class="fg-sign"><span class="fg-sign-lab">The move</span><span class="fg-blend">infinitivo + ía ías ía íamos íais ían</span></div>
+          <div class="fg-sign"><span class="fg-sign-lab">The move</span><span class="fg-blend">trabajaría · comería · viviría</span></div>
           <div class="fg-ex"><span class="fg-lab">In the wild</span>
             <div class="fg-es">Sabía que tomaría tiempo.</div>
             <div class="tv-en">I knew it would take time.</div>
           </div>
           <div class="fg-note">Same new stems as the future: tendría, haría, podría.</div>
+          <button type="button" class="tv-flip" aria-expanded="false">Conjugation table <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="tv-table-wrap"><table class="tv-table">
+            <tr><th></th><th>trabajar</th><th>comer</th><th>vivir</th></tr>
+            <tr><td>yo</td><td>trabajaría</td><td>comería</td><td>viviría</td></tr>
+            <tr><td>tú</td><td>trabajarías</td><td>comerías</td><td>vivirías</td></tr>
+            <tr><td>él / ella / Ud.</td><td>trabajaría</td><td>comería</td><td>viviría</td></tr>
+            <tr><td>nosotros</td><td>trabajaríamos</td><td>comeríamos</td><td>viviríamos</td></tr>
+            <tr><td>vosotros</td><td>trabajaríais</td><td>comeríais</td><td>viviríais</td></tr>
+            <tr><td>ellos / Uds.</td><td>trabajarían</td><td>comerían</td><td>vivirían</td></tr>
+          </table></div>
         </article>
 
         <article class="fg-card tv-card" data-g="adv">
@@ -1351,6 +1412,16 @@ body[data-view="tenses"] .view-tenses { display: block; }
             <div class="fg-es">Yo me ducho por la mañana.</div>
             <div class="tv-en">I shower in the morning.</div>
           </div>
+          <button type="button" class="tv-flip" aria-expanded="false">Conjugation table <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="tv-table-wrap"><table class="tv-table">
+            <tr><th></th><th>pronombre</th><th>ducharse</th></tr>
+            <tr><td>yo</td><td>me</td><td>me ducho</td></tr>
+            <tr><td>tú</td><td>te</td><td>te duchas</td></tr>
+            <tr><td>él / ella / Ud.</td><td>se</td><td>se ducha</td></tr>
+            <tr><td>nosotros</td><td>nos</td><td>nos duchamos</td></tr>
+            <tr><td>vosotros</td><td>os</td><td>os ducháis</td></tr>
+            <tr><td>ellos / Uds.</td><td>se</td><td>se duchan</td></tr>
+          </table></div>
         </article>
 
         <article class="fg-card tv-card" data-g="adv">
@@ -1362,13 +1433,23 @@ body[data-view="tenses"] .view-tenses { display: block; }
             <div class="fg-es">Come tu cena.</div>
             <div class="tv-en">Eat your dinner.</div>
           </div>
+          <button type="button" class="tv-flip" aria-expanded="false">Conjugation table <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="tv-table-wrap"><table class="tv-table">
+            <tr><th>verbo</th><th>tú, directo</th></tr>
+            <tr><td>comer</td><td>come</td></tr>
+            <tr><td>hablar</td><td>habla</td></tr>
+            <tr><td>escuchar</td><td>escucha</td></tr>
+            <tr><td>venir</td><td>ven</td></tr>
+            <tr><td>hacer</td><td>haz</td></tr>
+            <tr><td>decir</td><td>di</td></tr>
+          </table></div>
         </article>
 
         <article class="fg-card tv-card" data-g="adv">
           <div class="fg-top"><span class="fg-tag tvt-adv">Avanzadas</span></div>
           <h3 class="fg-phrase">Subjuntivo</h3>
           <p class="fg-gloss">Wishes, doubts, feelings. Not a fact yet: two subjects, a que, and flipped endings.</p>
-          <div class="fg-sign"><span class="fg-sign-lab">The move</span><span class="fg-blend">sujeto 1 + que + sujeto 2, endings flipped</span></div>
+          <div class="fg-sign"><span class="fg-sign-lab">The move</span><span class="fg-blend">que hables · que comas · que viva</span></div>
           <div class="fg-ex"><span class="fg-lab">In the wild</span>
             <div class="fg-es">Yo quiero que tú hables español.</div>
             <div class="tv-en">I want you to speak Spanish.</div>
@@ -1390,18 +1471,32 @@ body[data-view="tenses"] .view-tenses { display: block; }
           <div class="fg-top"><span class="fg-tag tvt-adv">Avanzadas</span></div>
           <h3 class="fg-phrase">Perífrasis</h3>
           <p class="fg-gloss">Two verbs working as one. Not a tense, a structure that adds meaning.</p>
-          <div class="fg-sign"><span class="fg-sign-lab">The move</span><span class="fg-blend">tener que + infinitivo<br />seguir + gerundio<br />llevar + tiempo + gerundio</span></div>
+          <div class="fg-sign"><span class="fg-sign-lab">The move</span><span class="fg-blend">tengo que estudiar · sigo aprendiendo</span></div>
           <div class="fg-ex"><span class="fg-lab">In the wild</span>
             <div class="fg-es">Llevo tres años viviendo en Nueva York.</div>
             <div class="tv-en">I have been living in New York for three years.</div>
           </div>
+          <button type="button" class="tv-flip" aria-expanded="false">Conjugation table <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="tv-table-wrap"><table class="tv-table">
+            <tr><th>estructura</th><th>ejemplo</th></tr>
+            <tr><td>ir a + infinitivo</td><td>Voy a comer.</td></tr>
+            <tr><td>tener que + infinitivo</td><td>Tengo que trabajar.</td></tr>
+            <tr><td>estar + gerundio</td><td>Estoy trabajando.</td></tr>
+            <tr><td>seguir + gerundio</td><td>Sigo aprendiendo.</td></tr>
+            <tr><td>llevar + tiempo + gerundio</td><td>Llevo años trabajando.</td></tr>
+          </table></div>
         </article>
 
         <article class="fg-card tv-card" data-g="adv">
           <div class="fg-top"><span class="fg-tag tvt-adv">Avanzadas</span></div>
           <h3 class="fg-phrase">Ser</h3>
           <p class="fg-gloss">The most irregular verb in the language. If you memorize one grid cold, make it this one.</p>
-          <button type="button" class="tv-flip" aria-expanded="false">All five tenses <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="fg-sign"><span class="fg-sign-lab">The move</span><span class="fg-blend">soy · fui · era · sería · seré</span></div>
+          <div class="fg-ex"><span class="fg-lab">In the wild</span>
+            <div class="fg-es">Nosotros fuimos estudiantes.</div>
+            <div class="tv-en">We were students.</div>
+          </div>
+          <button type="button" class="tv-flip" aria-expanded="false">Conjugation table <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <div class="tv-table-wrap"><table class="tv-table">
             <tr><th></th><th>pres.</th><th>pret.</th><th>imperf.</th><th>cond.</th><th>fut.</th></tr>
             <tr><td>yo</td><td>soy</td><td>fui</td><td>era</td><td>sería</td><td>seré</td></tr>
