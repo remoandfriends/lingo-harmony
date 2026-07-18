@@ -485,14 +485,194 @@ a.plaque-rosa:hover { box-shadow: 5px 6px 0 0 var(--rosa-deep); }
 .method .kicker { flex: 0 0 100%; margin-bottom: 34px; color: var(--rosa-deep); }
 .step { max-width: 250px; }
 .step .word {
-  font-family: var(--disp); font-style: italic;
-  font-variation-settings: 'opsz' 144, 'WONK' 1;
-  font-weight: 620; font-size: clamp(28px, 3vw, 40px);
+  font-family: var(--mark); font-weight: 700;
+  font-size: clamp(23px, 2.5vw, 31px); letter-spacing: .015em;
   color: var(--azul); display: block; margin-bottom: 8px;
 }
 .step p { font-size: 15.5px; }
 .method-arrow { align-self: center; flex: 0 0 auto; padding-top: 8px; }
 .method-arrow svg { width: clamp(48px, 6vw, 88px); height: 30px; }
+
+/* ============================================================
+   GYM MENU + FIELD GUIDE PAGE
+   @ANCHOR:FIELD_GUIDE_CSS
+   ============================================================ */
+.nav-right { position: relative; }
+.gym-menu {
+  position: absolute; top: calc(100% + 13px); right: 0;
+  min-width: 254px;
+  background: #fff;
+  border: var(--line) solid var(--ink);
+  border-radius: 16px;
+  box-shadow: 6px 6px 0 0 var(--ink);
+  padding: 10px;
+  z-index: 60;
+}
+.gym-menu[hidden] { display: none; }
+.gm-item {
+  display: block; padding: 11px 13px; border-radius: 11px;
+  font-weight: 700; font-size: 15.5px; color: var(--ink); text-decoration: none;
+}
+.gm-item:hover { background: var(--azul-wash); color: var(--azul-deep); }
+.gm-sep {
+  height: 8px; margin: 9px 6px 7px; opacity: .5;
+  background-image: radial-gradient(circle, var(--azul) 2.2px, transparent 2.7px);
+  background-size: 17px 8px; background-repeat: repeat-x; background-position: left center;
+}
+.gm-label { display: block; padding: 0 13px 5px; color: var(--rosa-deep); }
+
+.view-guide { display: none; }
+body[data-view="guide"] .view-home,
+body[data-view="guide"] .view-auth,
+body[data-view="guide"] .view-floor,
+body[data-view="guide"] .band-close { display: none; }
+body[data-view="guide"] .view-guide { display: block; }
+
+.guide { padding: 46px 0 96px; }
+.guide-back {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-weight: 700; font-size: 15px; color: var(--ink); text-decoration: none;
+  margin-bottom: 34px;
+}
+.guide-back svg { width: 30px; height: 15px; flex: none; }
+.guide-back:hover { color: var(--azul); }
+.fg-kicker { display: block; color: var(--rosa-deep); margin-bottom: 16px; }
+.guide-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 10px; }
+.guide-head h2 {
+  font-family: var(--body);
+  font-weight: 1000;
+  font-size: clamp(28px, 3.7vw, 48px);
+  letter-spacing: -0.005em;
+  text-transform: uppercase;
+}
+.guide-head .sub { color: var(--ink); opacity: .78; font-size: 17px; max-width: 460px; }
+
+.fg-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; margin: 26px 0 22px; }
+.fg-search { position: relative; flex: 1 1 250px; max-width: 330px; }
+.fg-search svg { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; opacity: .55; pointer-events: none; }
+.fg-search input {
+  width: 100%; font-family: var(--body); font-size: 16px;
+  padding: 10px 16px 10px 41px;
+  border: var(--line) solid var(--ink); border-radius: 999px;
+  background: #fff; color: var(--ink);
+}
+.fg-search input:focus { outline: 3px solid var(--azul); outline-offset: 1px; }
+.fg-chips { display: flex; flex-wrap: wrap; gap: 9px; }
+.fg-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 2px solid var(--ink); border-radius: 999px;
+  background: #fff; color: var(--ink);
+  padding: 8px 15px;
+  font-family: var(--body); font-weight: 700; font-size: 13.5px; letter-spacing: .02em;
+  transition: transform .14s ease, box-shadow .14s ease, background .14s ease;
+}
+.fg-chip:hover { transform: translateY(-2px); box-shadow: 2.5px 2.5px 0 0 var(--ink); }
+.fg-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--ink); background: var(--cream); flex: none; }
+.fgd-blend { background: var(--azul); } .fgd-reduce { background: var(--mango); }
+.fgd-dropd { background: var(--rosa); } .fgd-ado { background: var(--peach); }
+.fgd-sdrop { background: var(--wave); } .fgd-homo { background: var(--navy); }
+.fg-chip[aria-pressed="true"].fgc-all { background: var(--ink); color: var(--cream); }
+.fg-chip[aria-pressed="true"].fgc-blend { background: var(--azul); border-color: var(--azul-deep); color: var(--cream); }
+.fg-chip[aria-pressed="true"].fgc-reduce { background: var(--mango); }
+.fg-chip[aria-pressed="true"].fgc-dropd { background: var(--rosa); border-color: var(--rosa-deep); }
+.fg-chip[aria-pressed="true"].fgc-ado { background: var(--peach); }
+.fg-chip[aria-pressed="true"].fgc-sdrop { background: var(--wave); }
+.fg-chip[aria-pressed="true"].fgc-homo { background: var(--navy); color: var(--cream); }
+
+.fg-count { font-size: 13.5px; font-weight: 700; opacity: .62; margin-bottom: 18px; }
+
+.fg-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(16px, 2.2vw, 24px); align-items: start; }
+
+.fg-card {
+  background: #fff;
+  border: var(--line) solid var(--ink); border-radius: 16px;
+  padding: 19px 19px 17px;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.fg-card:hover { transform: translateY(-4px); box-shadow: 4px 5px 0 0 var(--ink); }
+.fg-top { display: flex; justify-content: flex-start; margin-bottom: 11px; }
+.fg-tag {
+  display: inline-block;
+  font-family: var(--body); font-weight: 800; font-size: 10.5px;
+  letter-spacing: .13em; text-transform: uppercase;
+  border: 2px solid var(--ink); border-radius: 999px;
+  padding: 4px 11px;
+}
+.fgt-blend { background: var(--azul); color: var(--cream); border-color: var(--azul-deep); }
+.fgt-reduce { background: var(--mango); color: var(--ink); }
+.fgt-dropd { background: var(--rosa); color: var(--ink); border-color: var(--rosa-deep); }
+.fgt-ado { background: var(--peach); color: var(--ink); }
+.fgt-sdrop { background: var(--wave); color: var(--ink); }
+.fgt-homo { background: var(--navy); color: var(--cream); }
+
+.fg-phrase {
+  font-family: var(--mark); font-weight: 700;
+  font-size: 21.5px; line-height: 1.16; letter-spacing: .005em;
+  color: var(--azul);
+}
+.fg-gloss { font-size: 14.5px; opacity: .78; margin: 3px 0 13px; }
+.fg-row { font-size: 14px; line-height: 1.45; margin-bottom: 8px; }
+.fg-lab {
+  display: block;
+  font-weight: 800; font-size: 10.5px; letter-spacing: .12em;
+  text-transform: uppercase; opacity: .55; margin-bottom: 2px;
+}
+.fg-sound { font-weight: 700; }
+.fg-heard { color: var(--rosa-deep); font-weight: 600; }
+.fg-ex { margin-top: 11px; }
+.fg-es { font-weight: 600; font-size: 14px; margin: 1px 0 8px; }
+.fg-sign {
+  background: var(--navy);
+  background-image: repeating-linear-gradient(90deg, rgba(122,138,235,.13) 0 2px, transparent 2px 9px);
+  border: 2px solid var(--ink); border-radius: 10px;
+  padding: 9px 14px 10px;
+  display: flex; flex-direction: column; align-items: flex-start;
+}
+.fg-sign-lab {
+  font-family: var(--body); font-weight: 700; font-size: 9px;
+  letter-spacing: .34em; text-transform: uppercase;
+  color: var(--marq-sub); margin-bottom: 3px;
+}
+.fg-blend {
+  font-family: var(--mark); font-weight: 700; font-size: 18.5px;
+  line-height: 1.15; letter-spacing: .01em;
+  color: var(--marq-text); word-break: break-word;
+}
+.fg-note { font-size: 13px; font-weight: 600; color: var(--rosa-deep); margin-top: 7px; }
+.fg-audio { display: flex; gap: 9px; margin-top: 13px; }
+.fg-play {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--body); font-weight: 800; font-size: 13.5px; letter-spacing: .03em;
+  border: 2px solid var(--ink); border-radius: 999px;
+  padding: 8px 16px; color: var(--ink);
+  transition: transform .14s ease, box-shadow .14s ease, background .14s ease;
+}
+.fg-play:hover { transform: translate(-2px, -2px); box-shadow: 3px 3px 0 0 var(--ink); }
+.fg-play:active { transform: none; box-shadow: none; }
+.fg-play svg { width: 11px; height: 12px; flex: none; }
+.fg-play .ico-stop { display: none; }
+.fg-play.playing .ico-play { display: none; }
+.fg-play.playing .ico-stop { display: block; }
+.fg-play-fast { background: var(--mango); }
+.fg-play-clear { background: var(--azul-wash); }
+.fg-play.playing { background: var(--ink); color: var(--cream); }
+.fg-play.err { opacity: .45; pointer-events: none; }
+.fg-empty {
+  border: var(--line) dashed var(--ink); border-radius: 16px;
+  padding: 34px; text-align: center; font-size: 15.5px; opacity: .75;
+}
+
+@media (max-width: 900px) {
+  .fg-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .fg-grid { grid-template-columns: 1fr; }
+  .fg-search { max-width: none; }
+  .gym-menu { right: -8px; min-width: 236px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fg-card, .fg-chip, .fg-play { transition: none; }
+}
 
 /* ============================================================
    CLOSE BAND
@@ -791,6 +971,12 @@ a.plaque-rosa:hover { box-shadow: 5px 6px 0 0 var(--rosa-deep); }
     <nav class="nav-right">
       <a class="nav-enter" id="navEnter" href="#/entrar">Sign in</a>
       <a class="btn btn-azul" id="navJoin" href="#/join">Join the gym</a>
+      <div class="gym-menu" id="gymMenu" hidden>
+        <a class="gm-item" href="#/floor">El piso</a>
+        <div class="gm-sep" aria-hidden="true"></div>
+        <span class="label gm-label">Guías de referencia</span>
+        <a class="gm-item" href="#/guias/misheard">Mishearing Field Guide</a>
+      </div>
     </nav>
   </div>
 </header>
@@ -941,6 +1127,32 @@ a.plaque-rosa:hover { box-shadow: 5px 6px 0 0 var(--rosa-deep); }
     </div>
   </section>
 
+</div>
+
+<!-- ============================================================
+     @ANCHOR:VIEW_GUIDE
+     ============================================================ -->
+<div class="view-guide">
+  <section class="guide" id="guide">
+    <div class="wrap">
+      <a class="guide-back" href="#/"><svg viewBox="0 0 90 30" aria-hidden="true"><path d="M86 16 Q 50 6, 16 15" fill="none" stroke="#DB7F8E" stroke-width="5" stroke-linecap="round"/><path d="M24 6 L 12 15 L 27 21" fill="none" stroke="#DB7F8E" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Back to the gym</span></a>
+      <span class="label fg-kicker">Guías de referencia</span>
+      <div class="guide-head">
+        <h2>The Mishearing Field Guide</h2>
+        <span class="sub">44 tricks fast Spanish plays on your ear. Learn each trap, then hear it fast and clear.</span>
+      </div>
+      <div class="fg-tools">
+        <div class="fg-search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M15.5 15.5 L21 21" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+          <input type="search" id="fgSearch" placeholder="Search the guide" aria-label="Search the field guide" autocomplete="off" />
+        </div>
+        <div class="fg-chips" id="fgChips" role="group" aria-label="Filter by sound pattern"></div>
+      </div>
+      <p class="fg-count" id="fgCount" aria-live="polite"></p>
+      <div class="fg-grid" id="fgGrid"></div>
+      <div class="fg-empty" id="fgEmpty" hidden>Nothing in the guide matches that. Try fewer letters, or clear the filter.</div>
+    </div>
+  </section>
 </div>
 
 <!-- ============================================================
@@ -1144,7 +1356,7 @@ const LH_CONFIG = {
       key: "dictado",
       tag: "Estación · Dictado",
       name: "Transcription Challenge",
-      desc: "Hear a phrase, type every word, get graded on the spot. The purest listening rep there is.",
+      desc: "Hear a phrase, type every word, get graded on the spot. Three workouts inside: Sprints, Strength circuits and Fire Drill.",
       href: "./transcription-challenge.html",
       live: true,
       color: "azul"
@@ -1258,6 +1470,286 @@ renderStations("stationRowFloor");
   const tpl = document.getElementById("bloomTpl");
   const svg = tpl ? tpl.innerHTML : "";
   document.querySelectorAll("[data-bloom]").forEach(el => { el.innerHTML = svg; });
+})();
+
+
+/* ============================================================
+   @ANCHOR:FIELD_GUIDE_DATA
+   The Mishearing Field Guide. 44 traps, audio on the misheard CDN.
+   ============================================================ */
+const MH_AUDIO_BASE = "https://cdn.jsdelivr.net/gh/remoandfriends/spanish-trainer-audio@main/misheard/";
+/* Audio convention: {id}_fast.mp3 and {id}_clear.mp3 */
+
+const MH_CATS = {
+  blend:  {label:"Words fuse",       color:"var(--c-blend)"},
+  reduce: {label:"Spoken shortcut",  color:"var(--c-reduce)"},
+  dropd:  {label:"Final D drops",    color:"var(--c-dropd)"},
+  ado:    {label:"-ado \u2192 -ao",  color:"var(--c-ado)"},
+  sdrop:  {label:"S softens",        color:"var(--c-sdrop)"},
+  homo:   {label:"Sound-alike trap", color:"var(--c-homo)"}
+};
+
+const MH_ENTRIES = [
+  {id:"dijo", phrase:"dijo", gloss:"(he/she) said", cat:"blend",
+    sound:["diho","dijoque"], heard:["jugar","dejar","hizo"],
+    ex:{es:"Me dijo que\u2026", blend:"medijoque", heard:"me jugar"}},
+  {id:"hacer", phrase:"qu\u00e9 hacer", gloss:"what to do", cat:"blend",
+    sound:["as\u00e9r","keas\u00e9r"], heard:["querer","any \u201c-er\u201d blob"],
+    ex:{es:"No s\u00e9 qu\u00e9 hacer", blend:"nosekeas\u00e9r", heard:"querer"}},
+  {id:"por", phrase:"por", gloss:"for / by / through", cat:"reduce",
+    sound:["por\u2026","pornternet"], heard:["para","pa\u2019","puro"],
+    ex:{es:"por internet", blend:"pornternet", heard:"porto internet"}},
+  {id:"dejo", phrase:"dej\u00f3", gloss:"(he/she) left", cat:"blend",
+    sound:["deh\u00f3","dejotodo"], heard:["dijo","me he"],
+    ex:{es:"Me dej\u00f3 todos sus pendientes", blend:"medej\u00f3todossuspendientes"}},
+  {id:"casi", phrase:"casi", gloss:"almost", cat:"blend",
+    sound:["cahsi","casileda"], heard:["que si","casino","casi le"],
+    ex:{es:"Casi le da un infarto", blend:"casiledauninfarto", heard:"de mi fuerto"}},
+  {id:"estuvimos", phrase:"estuvimos", gloss:"we were", cat:"sdrop",
+    sound:["est\u00favimo","tuvimos"], heard:["a todas","estorados"],
+    ex:{es:"Estuvimos atorados", blend:"estuvimoatoraos"}},
+  {id:"cenar", phrase:"cenar", gloss:"to have dinner", cat:"blend",
+    sound:["sen\u00e1r","vamossen\u00e1r"], heard:["sanar","sentar"],
+    ex:{es:"Vamos a cenar", blend:"vamossen\u00e1r"}},
+  {id:"niun", phrase:"ni un", gloss:"not a single", cat:"blend",
+    sound:["niun"], heard:["ning\u00fan","nun","nune"],
+    ex:{es:"Ni un kilo", blend:"niunkilo", heard:"nune kilos"}},
+  {id:"comosinada", phrase:"como si nada hubiera pasado", gloss:"as if nothing happened", cat:"blend",
+    sound:["komosinadaubierapasao"], heard:["como poco","se ne nada"],
+    ex:{es:"\u2026como si nada hubiera pasado", blend:"komosinadaubierapasao", heard:"one of the hardest at native speed"}},
+  {id:"semete", phrase:"se mete en todo", gloss:"butts into everything", cat:"blend",
+    sound:["semeteentodo"], heard:["se me te todo","seme todo"],
+    ex:{es:"Se mete en todo", blend:"semeteentodo"}},
+  {id:"aversi", phrase:"a ver si", gloss:"let\u2019s see if", cat:"homo",
+    sound:["aversi"], heard:["haber si","a veri"],
+    ex:{es:"A ver si me siento mejor", blend:"aversimesientomejor", heard:"haber / a ver collapse"}},
+  {id:"paracolmo", phrase:"para colmo", gloss:"to top it all off", cat:"blend",
+    sound:["paracolmo"], heard:["para como","por colmo"],
+    ex:{es:"Para colmo, perdieron", blend:"paracolmoperdieron"}},
+  {id:"levalen", phrase:"le valen", gloss:"are worth (to him)", cat:"blend",
+    sound:["levalen"], heard:["viol\u00edn","leviol\u00edn"],
+    ex:{es:"No le valen nada", blend:"nolevalennada", heard:"viol\u00edn"}},
+  {id:"delpiso", phrase:"del piso de arriba", gloss:"from the floor above", cat:"blend",
+    sound:["delpisodearriba"], heard:["la pieza arriba","del piso arriba"],
+    ex:{es:"el ruido del piso de arriba", blend:"elruidodelpisodearriba"}},
+  {id:"atodovolumen", phrase:"a todo volumen", gloss:"at full volume", cat:"blend",
+    sound:["atodovolumen"], heard:["la luman"],
+    ex:{es:"la m\u00fasica a todo volumen", blend:"lam\u00fasicatodovolumen", heard:"volumen nearly vanishes"}},
+  {id:"secancelo", phrase:"se cancel\u00f3 el vuelo", gloss:"the flight got cancelled", cat:"blend",
+    sound:["secancel\u00f3elvuelo"], heard:["con fue el lo"],
+    ex:{es:"Se cancel\u00f3 el vuelo", blend:"secancel\u00f3elvuelo", heard:"only \u201cvuelo\u201d survives"}},
+  {id:"sinavisarme", phrase:"sin avisarme", gloss:"without telling me", cat:"blend",
+    sound:["sinavisarme"], heard:["dice te hacerme"],
+    ex:{es:"se fue sin avisarme", blend:"sefuesinavisarme"}},
+  {id:"cuandoregreso", phrase:"cuando regres\u00f3", gloss:"when (he) came back", cat:"blend",
+    sound:["cuandoregres\u00f3"], heard:["cuando llegar\u00e1","cuando regreso"],
+    ex:{es:"cuando regres\u00f3 del viaje", blend:"cuandoregres\u00f3delviaje"}},
+  {id:"laverdad", phrase:"la verdad", gloss:"the truth / honestly", cat:"dropd",
+    sound:["laverd\u00e1"], heard:["la fue had","lave dad"],
+    ex:{es:"La verdad, no s\u00e9", blend:"laverd\u00e1nos\u00e9", heard:"final D disappears"}},
+  {id:"ciudad", phrase:"de la ciudad", gloss:"of the city", cat:"dropd",
+    sound:["delasiud\u00e1"], heard:["a tu lave"],
+    ex:{es:"el centro de la ciudad", blend:"elsentrodelasiud\u00e1", heard:"ciudad almost vanishes"}},
+  {id:"estabien", phrase:"est\u00e1 bien", gloss:"it\u2019s fine / okay", cat:"reduce",
+    sound:["t\u00e1bien","st\u00e1bien"], heard:["tambi\u00e9n","ta bien"],
+    ex:{es:"Est\u00e1 bien, no te preocupes", blend:"t\u00e1biennotepreocupes"}},
+  {id:"esque", phrase:"es que", gloss:"it\u2019s just that\u2026", cat:"reduce",
+    sound:["eske"], heard:["este","ese"],
+    ex:{es:"Es que no puedo", blend:"eskenopuedo"}},
+  {id:"osea", phrase:"o sea", gloss:"I mean / that is", cat:"homo",
+    sound:["osea"], heard:["\u00f3sea (bone)","el oc\u00e9ano"],
+    ex:{es:"O sea, no s\u00e9 qu\u00e9 decir", blend:"oseanos\u00e9qu\u00e9decir"}},
+  {id:"paque", phrase:"pa\u2019 qu\u00e9", gloss:"what for?", cat:"reduce",
+    sound:["pak\u00e9"], heard:["porqu\u00e9","qu\u00e9"],
+    ex:{es:"\u00bfPa\u2019 qu\u00e9 lo quieres?", blend:"pak\u00e9loquieres"}},
+  {id:"nadakever", phrase:"nada que ver", gloss:"nothing to do with it", cat:"blend",
+    sound:["nadakeber"], heard:["nada que hacer"],
+    ex:{es:"Eso no tiene nada que ver", blend:"esonotienenadakeber"}},
+  {id:"ahorita", phrase:"ahorita", gloss:"right now / in a bit", cat:"reduce",
+    sound:["orita"], heard:["Rita","ahora"],
+    ex:{es:"Ahorita voy", blend:"oritavoy"}},
+  {id:"todavia", phrase:"todav\u00eda no", gloss:"not yet", cat:"blend",
+    sound:["toav\u00edano","toab\u00edano"], heard:["toda v\u00eda","todo v\u00eda"],
+    ex:{es:"Todav\u00eda no llega", blend:"toav\u00edanoyega"}},
+  {id:"yano", phrase:"ya no", gloss:"not anymore", cat:"blend",
+    sound:["yano"], heard:["llano","y no"],
+    ex:{es:"Ya no quiero", blend:"yanokiero"}},
+  {id:"loquepasa", phrase:"lo que pasa es que", gloss:"the thing is\u2026", cat:"blend",
+    sound:["lokepasaeske"], heard:["lo que pasa","esque"],
+    ex:{es:"Lo que pasa es que no hab\u00eda", blend:"lokepasaeskenoab\u00eda", heard:"a five-word mega-blob"}},
+  {id:"derepente", phrase:"de repente", gloss:"suddenly", cat:"reduce",
+    sound:["drepente","dereppente"], heard:["diferente","de repe"],
+    ex:{es:"Y de repente se fue", blend:"idrepentesefue"}},
+  {id:"comoestas", phrase:"\u00bfc\u00f3mo est\u00e1s?", gloss:"how are you?", cat:"blend",
+    sound:["komot\u00e1s","komost\u00e1s"], heard:["c\u00f3mo tas","como \u2019t\u00e1s"],
+    ex:{es:"\u00bfC\u00f3mo est\u00e1s?", blend:"komot\u00e1s"}},
+  {id:"hacerato", phrase:"hace rato", gloss:"a while ago", cat:"blend",
+    sound:["aserato"], heard:["a cerato","hacer algo"],
+    ex:{es:"Lleg\u00f3 hace rato", blend:"yeg\u00f3aserato"}},
+  {id:"deunavez", phrase:"de una vez", gloss:"once and for all", cat:"sdrop",
+    sound:["deunab\u00e9h","deunav\u00e9"], heard:["debe","de una ve"],
+    ex:{es:"Hazlo de una vez", blend:"azlodeunab\u00e9h"}},
+  {id:"quehoraes", phrase:"\u00bfqu\u00e9 hora es?", gloss:"what time is it?", cat:"blend",
+    sound:["k\u00e9oraes","k\u00f3rae"], heard:["cora","qu\u00e9 horas"],
+    ex:{es:"\u00bfQu\u00e9 hora es?", blend:"k\u00e9oraes"}},
+  {id:"cansado", phrase:"cansado", gloss:"tired", cat:"ado",
+    sound:["kansao"], heard:["cansa","canso"],
+    ex:{es:"Estoy muy cansado", blend:"stoymuykansao", heard:"intervocalic D drops"}},
+  {id:"pescado", phrase:"pescado", gloss:"fish", cat:"ado",
+    sound:["pehkao","peskao"], heard:["pesca","pescao"],
+    ex:{es:"No como pescado", blend:"nokomopehkao"}},
+  {id:"usted", phrase:"usted", gloss:"you (formal)", cat:"dropd",
+    sound:["ust\u00e9"], heard:["este","uste"],
+    ex:{es:"\u00bfY usted?", blend:"iust\u00e9", heard:"final D gone"}},
+  {id:"palla", phrase:"pa\u2019 all\u00e1", gloss:"over there", cat:"reduce",
+    sound:["pay\u00e1","pa\u028e\u00e1"], heard:["paya","haya"],
+    ex:{es:"Vamos pa\u2019 all\u00e1", blend:"vamospay\u00e1"}},
+  {id:"vaaser", phrase:"va a hacer", gloss:"is going to do/make", cat:"homo",
+    sound:["vaaser","vaser"], heard:["va a ser (to be)","hacer"],
+    ex:{es:"\u00bfQu\u00e9 va a hacer?", blend:"k\u00e9vaaser", heard:"hacer vs. ser collapse"}},
+  {id:"medaigual", phrase:"me da igual", gloss:"I don\u2019t care either way", cat:"blend",
+    sound:["medaigual"], heard:["media gual"],
+    ex:{es:"La verdad, me da igual", blend:"laverd\u00e1medaigual"}},
+  {id:"enserio", phrase:"\u00bfen serio?", gloss:"seriously?", cat:"blend",
+    sound:["enserio"], heard:["en cerio","incierto"],
+    ex:{es:"\u00bfEn serio dijo eso?", blend:"enseriodijoeso"}},
+  {id:"dehecho", phrase:"de hecho", gloss:"in fact", cat:"homo",
+    sound:["de\u00e9cho"], heard:["derecho","de eso"],
+    ex:{es:"De hecho, s\u00ed", blend:"de\u00e9chos\u00ed", heard:"derecho (right/straight)"}},
+  {id:"quetal", phrase:"\u00bfqu\u00e9 tal?", gloss:"how\u2019s it going?", cat:"reduce",
+    sound:["ket\u00e1l"], heard:["qu\u00e9 tan","quetzal"],
+    ex:{es:"\u00bfQu\u00e9 tal todo?", blend:"ket\u00e1ltodo"}},
+  {id:"alrato", phrase:"al rato", gloss:"in a little while", cat:"blend",
+    sound:["alrato"], heard:["alrededor","a la otra"],
+    ex:{es:"Te llamo al rato", blend:"teyamoalrato"}}
+];
+
+(function fieldGuide() {
+  "use strict";
+  var grid = document.getElementById("fgGrid");
+  var section = document.getElementById("guide");
+  if (!grid || !section) return;
+  var chipsBox = document.getElementById("fgChips");
+  var searchEl = document.getElementById("fgSearch");
+  var countEl = document.getElementById("fgCount");
+  var emptyEl = document.getElementById("fgEmpty");
+  var cat = "all";
+  var q = "";
+
+  function fold(s) { return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
+  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+  function haystack(e) {
+    return fold([e.phrase, e.gloss, e.sound.join(" "), e.heard.join(" "), e.ex.es, e.ex.blend].join(" "));
+  }
+
+  function playIcons() {
+    return '<svg class="ico-play" viewBox="0 0 12 14" aria-hidden="true"><path d="M1 1 L11 7 L1 13 Z" fill="currentColor"/></svg>' +
+           '<svg class="ico-stop" viewBox="0 0 12 14" aria-hidden="true"><rect x="1" y="2" width="10" height="10" rx="1.5" fill="currentColor"/></svg>';
+  }
+  function playBtn(e, kind, label) {
+    return '<button type="button" class="fg-play fg-play-' + kind + '" data-clip="' + e.id + '_' + kind +
+      '" aria-label="Hear ' + esc(e.phrase) + ' (' + label.toLowerCase() + ')">' + playIcons() + '<span>' + label + '</span></button>';
+  }
+  function cardHtml(e) {
+    var note = e.ex.heard ? '<div class="fg-note">' + esc(e.ex.heard) + '</div>' : "";
+    return '<article class="fg-card" data-cat="' + e.cat + '">' +
+      '<div class="fg-top"><span class="fg-tag fgt-' + e.cat + '">' + esc(MH_CATS[e.cat].label) + '</span></div>' +
+      '<h3 class="fg-phrase">' + esc(e.phrase) + '</h3>' +
+      '<p class="fg-gloss">' + esc(e.gloss) + '</p>' +
+      '<div class="fg-row"><span class="fg-lab">Real sound</span><span class="fg-sound">' + e.sound.map(esc).join(" &middot; ") + '</span></div>' +
+      '<div class="fg-row"><span class="fg-lab">Misheard as</span><span class="fg-heard">' + e.heard.map(esc).join(", ") + '</span></div>' +
+      '<div class="fg-ex"><span class="fg-lab">Example</span>' +
+        '<div class="fg-es">' + esc(e.ex.es) + '</div>' +
+        '<div class="fg-sign"><span class="fg-sign-lab">At speed</span><span class="fg-blend">' + esc(e.ex.blend) + '</span></div>' +
+        note +
+      '</div>' +
+      '<div class="fg-audio">' + playBtn(e, "fast", "Fast") + playBtn(e, "clear", "Clear") + '</div>' +
+      '</article>';
+  }
+
+  /* one shared player across all 88 clips */
+  var player = new Audio();
+  var activeBtn = null;
+  function resetBtn() {
+    if (activeBtn) { activeBtn.classList.remove("playing"); activeBtn = null; }
+  }
+  function stopAudio() {
+    player.pause();
+    try { player.currentTime = 0; } catch (err) {}
+    resetBtn();
+  }
+  function markSoon(btn) {
+    btn.classList.add("err");
+    var s = btn.querySelector("span");
+    if (s) s.textContent = "soon";
+  }
+  player.addEventListener("ended", resetBtn);
+  player.addEventListener("error", function () {
+    if (activeBtn) { markSoon(activeBtn); resetBtn(); }
+  });
+  grid.addEventListener("click", function (ev) {
+    var btn = ev.target.closest(".fg-play");
+    if (!btn || btn.classList.contains("err")) return;
+    if (btn === activeBtn) { stopAudio(); return; }
+    stopAudio();
+    player.src = MH_AUDIO_BASE + btn.getAttribute("data-clip") + ".mp3";
+    activeBtn = btn;
+    btn.classList.add("playing");
+    player.play().catch(function () {
+      markSoon(btn);
+      resetBtn();
+    });
+  });
+
+  function apply() {
+    var fq = fold(q.trim());
+    var items = MH_ENTRIES.filter(function (e) {
+      return (cat === "all" || e.cat === cat) && (fq === "" || haystack(e).indexOf(fq) !== -1);
+    });
+    stopAudio();
+    grid.innerHTML = items.map(cardHtml).join("");
+    emptyEl.hidden = items.length !== 0;
+    countEl.textContent = "Showing " + items.length + " of " + MH_ENTRIES.length;
+  }
+
+  var chipDefs = [["all", "All"]].concat(Object.keys(MH_CATS).map(function (k) { return [k, MH_CATS[k].label]; }));
+  chipsBox.innerHTML = chipDefs.map(function (d) {
+    return '<button type="button" class="fg-chip fgc-' + d[0] + '" data-cat="' + d[0] +
+      '" aria-pressed="' + (d[0] === "all" ? "true" : "false") + '">' +
+      '<span class="fg-dot fgd-' + d[0] + '"></span>' + esc(d[1]) + '</button>';
+  }).join("");
+  chipsBox.addEventListener("click", function (ev) {
+    var chip = ev.target.closest(".fg-chip");
+    if (!chip) return;
+    cat = chip.getAttribute("data-cat");
+    chipsBox.querySelectorAll(".fg-chip").forEach(function (x) {
+      x.setAttribute("aria-pressed", x === chip ? "true" : "false");
+    });
+    apply();
+  });
+  searchEl.addEventListener("input", function () { q = searchEl.value; apply(); });
+
+  /* the gym menu on the nav button */
+  var navJoinBtn = document.getElementById("navJoin");
+  var gymMenu = document.getElementById("gymMenu");
+  function closeMenu() { if (gymMenu) gymMenu.hidden = true; }
+  if (navJoinBtn && gymMenu) {
+    navJoinBtn.addEventListener("click", function (ev) {
+      if (navJoinBtn.textContent !== "Mi gimnasio") return;
+      ev.preventDefault();
+      gymMenu.hidden = !gymMenu.hidden;
+    });
+    document.addEventListener("click", function (ev) {
+      if (gymMenu.hidden) return;
+      if (ev.target === navJoinBtn || navJoinBtn.contains(ev.target) || gymMenu.contains(ev.target)) return;
+      closeMenu();
+    });
+    document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") closeMenu(); });
+    gymMenu.addEventListener("click", function (ev) { if (ev.target.closest("a")) closeMenu(); });
+    window.addEventListener("hashchange", closeMenu);
+  }
+
+  apply();
 })();
 
 /* ============================================================
@@ -1424,6 +1916,9 @@ function route() {
     window.scrollTo(0, 0);
   } else if (h === "#/floor") {
     document.body.dataset.view = "floor";
+    window.scrollTo(0, 0);
+  } else if (h === "#/guias/misheard") {
+    document.body.dataset.view = "guide";
     window.scrollTo(0, 0);
   } else if (h === "#/" || h === "") {
     document.body.dataset.view = "home";
