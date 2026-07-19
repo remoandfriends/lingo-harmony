@@ -128,6 +128,27 @@ a.pill.hub-link:hover{color:var(--ink);border-color:var(--ink);background:var(--
 .fin-actions button:hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--ink)}
 .fin-actions button.primary{background:var(--mango)}
 .allgood{font-size:14px;color:var(--green);text-align:center;padding:8px 0 2px}
+
+/* ---------- openers (First Alarm) ---------- */
+.oa-panel{margin-top:16px}
+.oa-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:2px}
+.oa-title{font-family:'Quicksand';font-weight:700;font-size:20px;color:var(--ink)}
+.oa-sub{font-family:var(--mono);font-weight:700;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.oslots{display:flex;flex-wrap:wrap;gap:12px 14px;justify-content:center;padding:8px 0 20px;min-height:64px}
+.oslot{display:inline-flex;flex-direction:column;align-items:center;gap:5px}
+.oslot .sword{min-height:30px;font-family:var(--disp);font-style:italic;font-weight:600;font-size:23px;color:var(--azul);letter-spacing:.01em;line-height:1;padding:0 2px}
+.oslot .sword.missed{color:var(--rosa-deep)}
+.oslot .sline{height:4px;border-radius:99px;background:var(--ink);width:100%;min-width:34px}
+.oslot.active .sline{background:var(--azul);height:5px;animation:linepulse 1.1s ease-in-out infinite}
+@keyframes linepulse{50%{opacity:.45}}
+.oslot.locked .sline{background:var(--green)}
+.obank{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:4px 0 6px}
+.obank.dead{pointer-events:none;opacity:.45;filter:saturate(.55);transition:opacity .3s ease}
+.ochip{background:var(--cream);border:var(--line) solid var(--ink);border-radius:999px;padding:9px 17px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:16.5px;color:var(--ink);cursor:pointer;transition:transform .12s ease, opacity .2s ease}
+.ochip:hover{transform:translateY(-2px)}
+.ochip.used{opacity:0;pointer-events:none;transform:scale(.6)}
+.ochip.no{animation:shake .3s ease;border-color:var(--rosa-deep);color:var(--rosa-deep)}
+@media (max-width:400px){ .oslot .sword{font-size:19px} .ochip{font-size:15px;padding:8px 14px} }
 .screen{display:none}
 .screen.on{display:block}
 .coach-fire{position:fixed;left:calc(50% + 318px);bottom:0;width:250px;pointer-events:none;z-index:1}
@@ -160,6 +181,15 @@ a.pill.hub-link:hover{color:var(--ink);border-color:var(--ink);background:var(--
     <div class="panel rise">
       <p class="intro-copy">Spoken Spanish runs words together. <b>Medijoque</b>. <b>Aversi</b>. <b>Keseso</b>. Each drill plays a real phrase at full speed and gives you <b>15 seconds</b> to name the piece your ear misheard. The traps you miss come back in later drills.</p>
       <div class="drill-grid" id="drillGrid"></div>
+    </div>
+    <div class="panel rise oa-panel">
+      <div class="oa-head">
+        <div class="oa-title">First Alarm</div>
+        <div class="pill" id="alarmPill">0 / 10 alarms</div>
+      </div>
+      <div class="oa-sub">Phrase openers &middot; Spanish in, English out</div>
+      <p class="intro-copy">The opening words carry the whole sentence. <b>Viajar&iacute;a</b> is not <b>viajar&eacute;</b>. <b>Sol&iacute;amos</b> is not <b>solemos</b>. Each alarm plays only the start of a phrase and you rebuild what it means in English, word by word, from a scrambled bank. Five seconds per word, and a wrong tap costs five.</p>
+      <div class="drill-grid" id="alarmGrid"></div>
     </div>
   </section>
 
@@ -209,6 +239,52 @@ a.pill.hub-link:hover{color:var(--ink);border-color:var(--ink);background:var(--
       <div class="fin-actions">
         <button id="btnRetry">Retry drill</button>
         <button class="primary" id="btnNextDrill">Next drill</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- OPENERS -->
+  <section class="screen" id="scrOpen">
+    <div class="hud">
+      <button class="back" id="btnOBack">&larr; Exit</button>
+      <div class="prog" id="oProg">1 / 10</div>
+      <div class="streak" id="oStreak"></div>
+    </div>
+    <div class="panel rise">
+      <div class="listenbar">
+        <button class="play" id="btnOPlay" aria-label="Play audio">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.55.83l10-6.5a1 1 0 0 0 0-1.66l-10-6.5A1 1 0 0 0 8 5.5z"/></svg>
+        </button>
+        <div class="lmeta">
+          <div class="l1">Listen &middot; just the opening</div>
+          <div class="l2">Replay free. Tap the English below in order.</div>
+          <div class="tts-chip" id="oTtsChip">placeholder voice</div>
+        </div>
+        <div class="timer" id="oTimerBox"><div class="tv" id="oTimerVal">20</div></div>
+      </div>
+      <div class="tbar" id="oTbar"><i id="oTbarFill" style="width:100%"></i></div>
+      <div class="oslots" id="oSlots"></div>
+      <div class="obank" id="oBank"></div>
+      <div class="verdict" id="oVerdict">
+        <div class="stamp" id="oVStamp"></div>
+        <div class="en" id="oVEn"></div>
+      </div>
+      <button class="nextbtn" id="btnONext">Next &rarr;</button>
+    </div>
+  </section>
+
+  <!-- OPENERS FINISH -->
+  <section class="screen" id="scrOpenFin">
+    <div class="panel rise">
+      <div class="fin-head">
+        <div class="big" id="oFinScore">0</div>
+        <div class="sub" id="oFinSub">Alarm 1 &middot; 0 of 10</div>
+        <div class="rec" id="oFinRec">New best score</div>
+      </div>
+      <div id="oFinReview"></div>
+      <div class="fin-actions">
+        <button id="btnORetry">Retry alarm</button>
+        <button class="primary" id="btnONextAlarm">Next alarm</button>
       </div>
     </div>
   </section>
@@ -532,7 +608,7 @@ const FD = {
 };
 
 function show(id){
-  ['scrHome','scrDrill','scrFin'].forEach(s=>$(s).classList.toggle('on', s===id));
+  ['scrHome','scrDrill','scrFin','scrOpen','scrOpenFin'].forEach(s=>$(s).classList.toggle('on', s===id));
 }
 function renderHome(){
   const best=loadBest();
@@ -569,6 +645,400 @@ document.addEventListener('pointerdown', ()=>Music.arm(), {once:true, capture:tr
 document.addEventListener('keydown', ()=>Music.arm(), {once:true, capture:true});
 window.addEventListener('pagehide', ()=>Music.persist());
 $('musicBtn').addEventListener('click', ()=>{ Fx.ensure(); Music.armed=true; Music.toggle(); });
+/* ============================================================
+   FIRST ALARM
+   Phrase openers. The audio plays only the start of a Spanish
+   phrase and stops. The player rebuilds what that opening means
+   in English by tapping word chips into order, Sprints style.
+   The bank is salted with the confusions that matter: pronoun
+   swaps and tense partners like will and would, was and were.
+   Five seconds per English word. A wrong tap costs five.
+   ============================================================ */
+const OPENERS = [
+  {"es":"Normalmente se me olvida","en":"I usually forget to"},
+  {"es":"Ella decidió","en":"She decided to"},
+  {"es":"Estábamos caminando cuando","en":"We were walking when"},
+  {"es":"Ellos ya han terminado","en":"They have already finished"},
+  {"es":"Probablemente visitaré","en":"I will probably visit"},
+  {"es":"Deberías traer","en":"You should bring"},
+  {"es":"Él seguía diciendo que","en":"He kept saying that"},
+  {"es":"Estaba buscando","en":"I was looking for"},
+  {"es":"Antes creían que","en":"They used to believe that"},
+  {"es":"Hemos estado esperando","en":"We have been waiting for"},
+  {"es":"Viajaría si","en":"I would travel if"},
+  {"es":"Ella acaba de llegar a","en":"She just arrived at"},
+  {"es":"Estamos planeando","en":"We are planning to"},
+  {"es":"Él nunca había visto","en":"He had never seen"},
+  {"es":"Todavía estoy tratando de","en":"I am still trying to"},
+  {"es":"De repente se dieron cuenta de que","en":"They suddenly realized"},
+  {"es":"Siempre te quejas de","en":"You always complain about"},
+  {"es":"He aprendido que","en":"I have learned that"},
+  {"es":"Ella te llamará cuando","en":"She will call you when"},
+  {"es":"Estábamos comiendo cuando","en":"We were eating when"},
+  {"es":"Quiero que entiendas que","en":"I want you to understand that"},
+  {"es":"Él me dijo que","en":"He told me to"},
+  {"es":"Puede que cancelen","en":"They might cancel"},
+  {"es":"Terminé comprando","en":"I ended up buying"},
+  {"es":"Ella ha estado trabajando en","en":"She has been working on"},
+  {"es":"Nos quedaríamos si","en":"We would stay if"},
+  {"es":"A menudo me pregunto por qué","en":"I often wonder why"},
+  {"es":"Se le olvidó mencionar","en":"He forgot to mention"},
+  {"es":"Siguieron corriendo hasta que","en":"They kept running until"},
+  {"es":"Necesitas terminar","en":"You need to finish"},
+  {"es":"Voy a mejorar","en":"I am going to improve"},
+  {"es":"Ella estaba pensando en","en":"She was thinking about"},
+  {"es":"Acabamos de enterarnos de que","en":"We just found out that"},
+  {"es":"Él nunca aceptaría","en":"He would never accept"},
+  {"es":"He tratado de explicar","en":"I have tried to explain"},
+  {"es":"Empezaron a construir","en":"They started building"},
+  {"es":"Estabas diciendo que","en":"You were saying that"},
+  {"es":"Planeo cambiar","en":"I plan to change"},
+  {"es":"Ella ya se había ido cuando","en":"She had already left when"},
+  {"es":"Seguimos buscando","en":"We continue searching for"},
+  {"es":"Espero que llegues","en":"I expect you to arrive"},
+  {"es":"Casi perdió","en":"He almost missed"},
+  {"es":"Probablemente elegirán","en":"They will probably choose"},
+  {"es":"Seguí escuchando","en":"I kept listening to"},
+  {"es":"Ella siempre evita","en":"She always avoids"},
+  {"es":"Estábamos hablando de","en":"We were discussing"},
+  {"es":"Nunca he experimentado","en":"I have never experienced"},
+  {"es":"Prometió ayudar","en":"He promised to help"},
+  {"es":"Preferirían","en":"They would prefer to"},
+  {"es":"Te estás convirtiendo en","en":"You are becoming"},
+  {"es":"Estaba a punto de irme cuando","en":"I was about to leave when"},
+  {"es":"Ella suele olvidar","en":"She tends to forget"},
+  {"es":"Hemos decidido","en":"We have decided to"},
+  {"es":"Él insistió en","en":"He insisted on"},
+  {"es":"Puede que empiece a aprender","en":"I might start learning"},
+  {"es":"Estaban conduciendo cuando","en":"They were driving when"},
+  {"es":"Has mejorado mucho","en":"You have improved a lot"},
+  {"es":"Me niego a aceptar","en":"I refuse to accept"},
+  {"es":"Probablemente traerá","en":"She will probably bring"},
+  {"es":"Solíamos visitar","en":"We used to visit"},
+  {"es":"Sigo pensando en","en":"I keep thinking about"},
+  {"es":"De repente dejó de","en":"He suddenly stopped"},
+  {"es":"Han estado estudiando","en":"They have been studying"},
+  {"es":"Cambiaría eso si","en":"I would change that if"},
+  {"es":"Necesitas entender","en":"You need to understand"},
+  {"es":"Ella empezó a llorar cuando","en":"She began to cry when"},
+  {"es":"Todavía estamos esperando","en":"We are still waiting for"},
+  {"es":"Ya te lo he dicho","en":"I have already told you"},
+  {"es":"Él estaba tratando de arreglar","en":"He was trying to fix"},
+  {"es":"Llegarán pronto","en":"They will arrive soon"},
+  {"es":"Te sugiero que","en":"I suggest that you"},
+  {"es":"Ella exigió que nosotros","en":"She demanded that we"},
+  {"es":"Esperamos terminar","en":"We hope to finish"},
+  {"es":"Seguía preguntando","en":"He kept asking"},
+  {"es":"Me estaba sintiendo cansado","en":"I was feeling tired"},
+  {"es":"Han olvidado","en":"They have forgotten"},
+  {"es":"Verás lo que pasa","en":"You will see what happens"},
+  {"es":"Nunca haría eso","en":"I would never do that"},
+  {"es":"Ella iba con retraso","en":"She was running late"},
+  {"es":"Estamos aprendiendo a","en":"We are learning how to"},
+  {"es":"Acabo de recordar que","en":"I just remembered that"},
+  {"es":"Ha estado llamando","en":"He has been calling"},
+  {"es":"Estaban esperando afuera","en":"They were waiting outside"},
+  {"es":"Planeo empezar","en":"I plan on starting"},
+  {"es":"Deberías evitar","en":"You should avoid"},
+  {"es":"Siguió practicando","en":"She kept practicing"},
+  {"es":"Ya habíamos comido cuando","en":"We had already eaten when"},
+  {"es":"Estoy empezando a ver","en":"I am beginning to see"},
+  {"es":"Él explicará","en":"He will explain"},
+  {"es":"Preferirían quedarse","en":"They would rather stay"},
+  {"es":"Quiero que entiendan","en":"I want them to understand"},
+  {"es":"Me pidió que trajera","en":"She asked me to bring"},
+  {"es":"Estamos tratando de construir","en":"We are trying to build"},
+  {"es":"Solía jugar","en":"He used to play"},
+  {"es":"He estado pensando en","en":"I have been thinking about"},
+  {"es":"De repente se detuvieron","en":"They suddenly stopped"},
+  {"es":"Estás empezando a mejorar","en":"You are starting to improve"},
+  {"es":"Podría considerar","en":"I might consider"},
+  {"es":"Probablemente se olvidará","en":"She will probably forget"},
+  {"es":"Estábamos a punto de empezar","en":"We were about to start"}
+];
+const OPENER_ALARMS = 10;
+const OPENERS_PER_ALARM = 10;
+const OPENER_AUDIO_BASE = 'https://cdn.jsdelivr.net/gh/remoandfriends/spanish-trainer-audio@main/firedrill/openers/';
+function openerSrc(it){ return OPENER_AUDIO_BASE + 'op-' + slugId(it.es).toLowerCase() + '.mp3'; }
+
+function mulberry32(a){ return function(){ a|=0; a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
+function seededShuffle(arr, seed){ const r=mulberry32(seed); const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(r()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+const OPENER_PRONOUNS = ['I','You','He','She','We','They'];
+const OPENER_TENSE_MAP = {
+  will:['would'], would:['will'], have:['had'], has:['had'], had:['have'],
+  was:['were'], were:['was'], am:['was'], is:['was'], are:['were'],
+  keep:['kept'], kept:['keep'], keeps:['kept'], used:['use'],
+  just:['still'], still:['already'], already:['still']
+};
+/* every English word across all openers, first spelling wins */
+const OPENER_POOL = (function(){
+  const seen=new Set(), out=[];
+  OPENERS.forEach(o=>o.en.split(' ').forEach(w=>{ const n=w.toLowerCase(); if(!seen.has(n)){ seen.add(n); out.push(w); } }));
+  return out;
+})();
+function openerBank(it, idx){
+  const targets = it.en.split(' ');
+  const need = new Set(targets.map(w=>w.toLowerCase()));
+  const wc = targets.length;
+  const size = wc<=3 ? 10 : wc<=5 ? wc+7 : wc+6;
+  const picks=[], have=new Set();
+  const add=(w)=>{ const n=w.toLowerCase(); if(need.has(n)||have.has(n)) return; have.add(n); picks.push(w); };
+  /* pronoun swaps: hearing Ella against El against Ellos is the whole game */
+  if(OPENER_PRONOUNS.indexOf(targets[0])!==-1){
+    seededShuffle(OPENER_PRONOUNS.filter(p=>p!==targets[0]), idx*31+7).slice(0,2).forEach(add);
+  }
+  /* tense and aspect partners for any target word that has one */
+  targets.forEach(w=>{ const alts=OPENER_TENSE_MAP[w.toLowerCase()]; if(alts) alts.forEach(add); });
+  /* fill from the pool, favouring lookalikes, same scoring as Sprints */
+  const rest = OPENER_POOL.filter(w=>{ const n=w.toLowerCase(); return !need.has(n)&&!have.has(n); });
+  const score=(w)=>{ const n=w.toLowerCase(); let s=0;
+    targets.forEach(t=>{ const tn=t.toLowerCase(); if(n[0]===tn[0]) s+=2; if(Math.abs(n.length-tn.length)<=1) s+=1; });
+    return s; };
+  seededShuffle(rest, idx*13+1).sort((a,b)=>score(b)-score(a))
+    .slice(0, Math.max(0, size-wc-picks.length)).forEach(add);
+  return seededShuffle(targets.concat(picks), idx*7+3);
+}
+
+const OA = {
+  state:null, audio:null, utter:null, safety:0, playToken:0, fellBack:0,
+  home(){
+    this.stopAudio(); clearInterval(this.state && this.state.iv);
+    this.state=null;
+    show('scrHome'); renderHome(); renderAlarms();
+    Music.set('home');
+  },
+  alarmItems(n){ return OPENERS.slice((n-1)*OPENERS_PER_ALARM, n*OPENERS_PER_ALARM); },
+  start(n){
+    if(n<1 || n>OPENER_ALARMS) return;
+    if(n>1 && !loadBest()['a'+(n-1)]) return;
+    this.state = { n, i:0, score:0, correct:0, streak:0, bestStreak:0,
+                   total:0, remaining:0, penalty:0, filled:0,
+                   running:false, resolved:false, misses:[], iv:0 };
+    show('scrOpen');
+    Music.set('play');
+    this.loadItem();
+  },
+  current(){ const st=this.state; if(!st) return null; return this.alarmItems(st.n)[st.i]; },
+  idx(){ const st=this.state; return (st.n-1)*OPENERS_PER_ALARM + st.i; },
+  loadItem(){
+    const st=this.state, it=this.current();
+    const words = it.en.split(' ');
+    st.total = 5*words.length; st.remaining = st.total; st.penalty = 0;
+    st.running=false; st.resolved=false; st.filled=0;
+    clearInterval(st.iv);
+    $('oProg').textContent = (st.i+1) + ' / ' + OPENERS_PER_ALARM;
+    $('oStreak').textContent = st.streak>1 ? ('\uD83D\uDD25 ' + st.streak) : '';
+    $('oTimerVal').textContent = st.total;
+    $('oTimerBox').classList.remove('hot'); $('oTbar').classList.remove('hot');
+    $('oTbarFill').style.width='100%';
+    $('oVerdict').className='verdict'; $('btnONext').className='nextbtn';
+    const slots=$('oSlots'); slots.innerHTML='';
+    words.forEach(w=>{
+      const d=document.createElement('span'); d.className='oslot';
+      d.innerHTML='<span class="sword"></span><span class="sline" style="min-width:'+Math.max(34, w.length*12)+'px"></span>';
+      slots.appendChild(d);
+    });
+    slots.children[0].classList.add('active');
+    const bank=$('oBank'); bank.innerHTML=''; bank.classList.remove('dead');
+    openerBank(it, this.idx()).forEach(w=>{
+      const b=document.createElement('button');
+      b.className='ochip'; b.textContent=w;
+      b.onclick=()=>this.tap(w, b);
+      bank.appendChild(b);
+    });
+    this.playAudio();
+  },
+  stopAudio(){
+    /* retire any in-flight playback: stale onended/onerror handlers and
+       pending play() rejections must never trigger the voice fallback */
+    this.playToken = (this.playToken||0) + 1;
+    if(this.audio){ try{ this.audio.onended=null; this.audio.onerror=null; this.audio.pause(); }catch(e){} this.audio=null; }
+    if(this.utter){ try{ speechSynthesis.cancel(); }catch(e){} this.utter=null; }
+    clearTimeout(this.safety);
+    Music.duck(false);
+  },
+  playAudio(){
+    const st=this.state, it=this.current(); if(!it || st.resolved) return;
+    Fx.ensure(); this.stopAudio();
+    $('oTtsChip').classList.remove('on');
+    Music.duck(true);
+    const tok = (this.playToken = (this.playToken||0) + 1);
+    const a = new Audio(openerSrc(it));
+    this.audio = a;
+    a.onended = ()=>{ if(tok===this.playToken){ Music.duck(false); this.startClock(); } };
+    a.onerror = ()=>{ this.fallbackOnce(tok, it); };
+    a.play().catch(()=>{ this.fallbackOnce(tok, it); });
+    /* whatever happens, the alarm never stalls */
+    clearTimeout(this.safety);
+    this.safety = setTimeout(()=>this.startClock(), 8000);
+  },
+  fallbackOnce(tok, it){
+    if(tok !== this.playToken) return;
+    if(this.fellBack === tok) return;
+    if(!this.state || this.state.resolved) return;
+    this.fellBack = tok;
+    this.speakFallback(it);
+  },
+  speakFallback(it){
+    $('oTtsChip').classList.add('on');
+    try{
+      const u = new SpeechSynthesisUtterance(it.es);
+      u.lang='es-ES'; u.rate=1.0;
+      const vs = speechSynthesis.getVoices().filter(v=>v.lang && v.lang.startsWith('es'));
+      if(vs.length) u.voice = vs[0];
+      u.onend = ()=>{ Music.duck(false); this.startClock(); };
+      this.utter=u;
+      speechSynthesis.cancel(); speechSynthesis.speak(u);
+      clearTimeout(this.safety);
+      this.safety = setTimeout(()=>this.startClock(), 4000);
+    }catch(e){ Music.duck(false); this.startClock(); }
+  },
+  startClock(){
+    const st=this.state; if(!st || st.running || st.resolved) return;
+    clearTimeout(this.safety);
+    st.running=true; st.penalty=0;
+    const t0=Date.now(), start=st.remaining;
+    st.iv=setInterval(()=>{
+      if(!this.state || this.state!==st){ clearInterval(st.iv); return; }
+      st.remaining = Math.max(0, start - (Date.now()-t0)/1000 - st.penalty);
+      const c = Math.ceil(st.remaining);
+      $('oTimerVal').textContent = c;
+      $('oTbarFill').style.width = (st.remaining/st.total*100) + '%';
+      if(st.remaining <= 5.05 && st.remaining > 0){
+        $('oTimerBox').classList.add('hot'); $('oTbar').classList.add('hot');
+        if(Math.abs(st.remaining - c) < 0.11) Fx.tick();
+      }
+      if(st.remaining <= 0){ this.resolve(false); }
+    }, 100);
+  },
+  tap(w, btn){
+    const st=this.state, it=this.current();
+    if(!st || st.resolved || btn.classList.contains('used')) return;
+    const words = it.en.split(' ');
+    if(w.toLowerCase() === words[st.filled].toLowerCase()){
+      btn.classList.add('used');
+      const slot=$('oSlots').children[st.filled];
+      slot.querySelector('.sword').textContent = words[st.filled];
+      slot.classList.remove('active'); slot.classList.add('locked');
+      st.filled++;
+      if(st.filled < words.length){
+        $('oSlots').children[st.filled].classList.add('active');
+        Fx.tone(660,.09,'sine',.10);
+      } else {
+        this.resolve(true);
+      }
+    } else {
+      Fx.wrong();
+      btn.classList.add('no');
+      setTimeout(()=>btn.classList.remove('no'), 320);
+      /* a wrong tap costs five seconds: guessing is not free */
+      st.remaining = Math.max(0, st.remaining - 5);
+      if(st.running) st.penalty += 5;
+      $('oTimerVal').textContent = Math.ceil(st.remaining);
+      $('oTbarFill').style.width = (st.remaining/st.total*100) + '%';
+      if(st.remaining <= 5.05){ $('oTimerBox').classList.add('hot'); $('oTbar').classList.add('hot'); }
+      if(st.remaining <= 0){ this.resolve(false); }
+    }
+  },
+  resolve(win){
+    const st=this.state, it=this.current(); if(!st || st.resolved) return;
+    st.resolved=true; st.running=false; clearInterval(st.iv);
+    this.stopAudio();
+    $('oBank').classList.add('dead');
+    const words = it.en.split(' ');
+    for(let k=st.filled; k<words.length; k++){
+      const slot=$('oSlots').children[k];
+      slot.classList.remove('active');
+      const sw=slot.querySelector('.sword');
+      sw.textContent=words[k]; sw.classList.add('missed');
+    }
+    const v=$('oVerdict');
+    if(win){
+      const gain = 100 + Math.round(st.remaining*3);
+      st.score += gain; st.correct++; st.streak++;
+      st.bestStreak=Math.max(st.bestStreak, st.streak);
+      Fx.right();
+      v.className='verdict show good';
+      $('oVStamp').textContent='\u2713 ' + it.en + '...  \u00b7  +' + gain;
+      $('oVEn').textContent=it.es + '...';
+    } else {
+      st.streak=0;
+      st.misses.push(it);
+      Fx.wrong();
+      v.className='verdict show bad';
+      $('oVStamp').textContent='\u23F1 Time. It opens: ' + it.en + '...';
+      $('oVEn').textContent=it.es + '...';
+    }
+    $('btnONext').classList.add('show');
+  },
+  next(){
+    const st=this.state; if(!st) return;
+    if(st.i >= OPENERS_PER_ALARM-1){ this.finish(); return; }
+    st.i++;
+    this.loadItem();
+  },
+  finish(){
+    const st=this.state;
+    clearInterval(st.iv); this.stopAudio();
+    const best=loadBest();
+    const prev=best['a'+st.n];
+    const rec = !prev || st.score > prev.score;
+    if(rec){ best['a'+st.n]={score:st.score, correct:st.correct}; saveBest(best); }
+    $('oFinScore').innerHTML = esc(String(st.score)) + '<span> pts</span>';
+    $('oFinSub').textContent = 'Alarm ' + st.n + ' \u00b7 ' + st.correct + ' of ' + OPENERS_PER_ALARM + ' \u00b7 best streak ' + st.bestStreak;
+    $('oFinRec').classList.toggle('on', rec && st.correct>0);
+    const rv=$('oFinReview'); rv.innerHTML='';
+    if(st.misses.length){
+      const h=document.createElement('div'); h.className='review-title';
+      h.textContent='The ones that got away'; rv.appendChild(h);
+      st.misses.forEach(it=>{
+        const d=document.createElement('div'); d.className='rev';
+        d.innerHTML='<div class="es">'+esc(it.es)+'...</div>'
+          +'<div class="nt">'+esc(it.en)+'...</div>';
+        const rp=document.createElement('button'); rp.className='rp'; rp.textContent='\u25B6 hear it again';
+        rp.onclick=()=>{ Fx.ensure(); const a=new Audio(openerSrc(it));
+          a.onerror=()=>{ try{ const u=new SpeechSynthesisUtterance(it.es); u.lang='es-ES'; speechSynthesis.cancel(); speechSynthesis.speak(u); }catch(e){} };
+          a.play().catch(()=>{ try{ const u=new SpeechSynthesisUtterance(it.es); u.lang='es-ES'; speechSynthesis.cancel(); speechSynthesis.speak(u); }catch(e){} }); };
+        d.appendChild(rp); rv.appendChild(d);
+      });
+    } else {
+      const d=document.createElement('div'); d.className='allgood';
+      d.textContent='Ten for ten. The openings are yours.'; rv.appendChild(d);
+    }
+    $('btnONextAlarm').style.display = st.n < OPENER_ALARMS ? '' : 'none';
+    show('scrOpenFin');
+  }
+};
+
+function renderAlarms(){
+  const best=loadBest();
+  const g=$('alarmGrid'); g.innerHTML='';
+  let done=0;
+  for(let n=1; n<=OPENER_ALARMS; n++){
+    const b=best['a'+n];
+    if(b) done++;
+    const unlocked = n===1 || !!best['a'+(n-1)];
+    const card=document.createElement('button');
+    card.className='drill-card rise' + (b ? ' done' : (unlocked ? ' current' : ' locked'));
+    card.disabled = !unlocked;
+    card.innerHTML='<span class="dc-l"><span class="n">Alarm '+n+'</span><br><span class="m">'+OPENERS_PER_ALARM+' openers \u00b7 5s per word</span></span>'
+      +(unlocked
+        ? '<span class="dc-r">'+(b ? (b.score+' pts<br>'+b.correct+' / '+OPENERS_PER_ALARM) : '<span class="none">not yet</span>')+'</span>'
+        : '<svg class="lock-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>');
+    if(unlocked) card.onclick=()=>{ Fx.ensure(); OA.start(n); };
+    g.appendChild(card);
+  }
+  $('alarmPill').textContent = done + ' / ' + OPENER_ALARMS + ' alarms';
+}
+
+$('btnOPlay').onclick=()=>OA.playAudio();
+$('btnOBack').onclick=()=>OA.home();
+$('btnONext').onclick=()=>OA.next();
+$('btnORetry').onclick=()=>OA.start(OA.state ? OA.state.n : 1);
+$('btnONextAlarm').onclick=()=>{ const n=OA.state ? OA.state.n : 0; OA.start(Math.min(OPENER_ALARMS, n+1)); };
+renderAlarms();
+window.OA = OA;
 window.FD = FD;
 window.Music = Music;
 </script>
