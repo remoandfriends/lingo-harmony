@@ -727,6 +727,36 @@ body[data-view="tenses"] .view-tenses { display: block; }
 .tv-table tr:last-child td { border-bottom: 0; }
 
 /* ============================================================
+   VOCABULARIO  (reference guide 3)
+   @ANCHOR:VOCAB_CSS
+   ============================================================ */
+.view-vocab { display: none; }
+body[data-view="vocab"] .view-home,
+body[data-view="vocab"] .view-auth,
+body[data-view="vocab"] .view-floor,
+body[data-view="vocab"] .band-close { display: none; }
+body[data-view="vocab"] .view-vocab { display: block; }
+
+.vb-panel {
+  background: #fff;
+  border: var(--line) solid var(--ink); border-radius: 16px;
+  padding: 20px 22px 18px;
+  margin-bottom: 20px;
+}
+.vb-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.vb-n { font-size: 12.5px; font-weight: 800; opacity: .55; white-space: nowrap; }
+.vb-panel .fg-gloss { margin: 2px 0 4px; }
+.vb-glab { display: block; color: var(--rosa-deep); margin: 15px 0 4px; }
+.vb-panel .tv-table td { vertical-align: top; }
+.vb-panel .tv-table td:first-child { white-space: normal; width: 30%; }
+.vb-panel .tv-table td:last-child { color: var(--rosa-deep); font-weight: 600; font-size: 12.5px; width: 27%; }
+.fg-chip.vbc[aria-pressed="true"] { background: var(--ink); color: var(--cream); }
+@media (max-width: 640px) {
+  .vb-panel { padding: 16px 15px 13px; }
+  .vb-panel .tv-table td:first-child { width: 34%; }
+}
+
+/* ============================================================
    GYM MENU SECTIONS + CUENTA + LEGAL PAGES
    @ANCHOR:CUENTA_CSS
    ============================================================ */
@@ -1102,6 +1132,7 @@ body[data-view="privacidad"] .view-privacidad { display: block; }
         <span class="label gm-label">Guías de referencia</span>
         <a class="gm-item" href="#/guias/misheard">Mishearing Field Guide</a>
         <a class="gm-item" href="#/guias/tiempos">Tiempos Verbales</a>
+        <a class="gm-item" href="#/guias/vocabulario">Vocabulario</a>
         <div class="gm-sep" aria-hidden="true"></div>
         <span class="label gm-label">Cuenta</span>
         <a class="gm-item" href="#/cuenta">Mi cuenta</a>
@@ -1586,6 +1617,32 @@ body[data-view="privacidad"] .view-privacidad { display: block; }
         </article>
 
       </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============================================================
+     @ANCHOR:VIEW_VOCAB
+     ============================================================ -->
+<div class="view-vocab">
+  <section class="guide" id="vocab">
+    <div class="wrap">
+      <a class="guide-back" href="#/"><svg viewBox="0 0 90 30" aria-hidden="true"><path d="M86 16 Q 50 6, 16 15" fill="none" stroke="#DB7F8E" stroke-width="5" stroke-linecap="round"/><path d="M24 6 L 12 15 L 27 21" fill="none" stroke="#DB7F8E" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Back to the gym</span></a>
+      <span class="label fg-kicker">Guías de referencia</span>
+      <div class="guide-head">
+        <h2>Vocabulario</h2>
+        <span class="sub">The word wall. Every verb in its infinitive, an article on every noun, irregular rules on the side. Search it or filter it.</span>
+      </div>
+      <div class="fg-tools">
+        <div class="fg-search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M15.5 15.5 L21 21" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+          <input type="search" id="vbSearch" placeholder="Search the wall" aria-label="Search the vocabulary" autocomplete="off" />
+        </div>
+        <div class="fg-chips" id="vbChips" role="group" aria-label="Filter by category"></div>
+      </div>
+      <p class="fg-count" id="vbCount" aria-live="polite"></p>
+      <div id="vbWall"></div>
+      <div class="fg-empty" id="vbEmpty" hidden>Nothing on the wall matches that. Try fewer letters, or clear the filter.</div>
     </div>
   </section>
 </div>
@@ -2344,6 +2401,503 @@ const MH_ENTRIES = [
   });
 })();
 
+
+/* ============================================================
+   @ANCHOR:VOCAB_DATA
+   The vocabulary wall. Infinitives only; irregular rules ride
+   in the notes column. Nouns carry their article.
+   ============================================================ */
+const VB_CATS = {
+  ese: { label: "Lo esencial", desc: "The verbs Spanish runs on. Master these before anything else." },
+  dia: { label: "Vida diaria", desc: "Waking up, getting dressed, keys, coffee, and everything around the house." },
+  emo: { label: "Emociones y estados", desc: "How you feel and how you say it." },
+  des: { label: "Descripciones", desc: "Words that size things up, plus the gender traps that fool everyone." },
+  dir: { label: "Direcciones y ciudad", desc: "Getting around town and understanding the answer when you ask." },
+  tra: { label: "Trabajo y estudio", desc: "The office, the classroom, and the words that pay the rent." },
+  dep: { label: "Deportes y ejercicio", desc: "The gym, the field, and everything that makes you sweat." },
+  ent: { label: "Entretenimiento", desc: "Movies, music, parties, and the gossip that follows." },
+  gen: { label: "La gente", desc: "Family, friends, in-laws, and the neighbor who hears everything." },
+  fra: { label: "Frases hechas", desc: "Ready-made phrases natives reach for. Learn the chunk, not the pieces." }
+};
+const VB_GROUPS = { v: "Verbos", n: "Sustantivos", a: "Adjetivos", adv: "Adverbios y conectores", f: "Frases" };
+const VB = [
+  { c: "ese", g: "v", es: "ser", en: "to be (who or what something is)", nt: "va por libre: soy, fui, era, seré" },
+  { c: "ese", g: "v", es: "estar", en: "to be (where or how something is)", nt: "yo estoy; pretérito estuve" },
+  { c: "ese", g: "v", es: "ir", en: "to go", nt: "voy, fui, iba, iré" },
+  { c: "ese", g: "v", es: "tener", en: "to have", nt: "tengo; tuve; futuro tendré" },
+  { c: "ese", g: "v", es: "hacer", en: "to do, to make", nt: "hago; hice; participio hecho" },
+  { c: "ese", g: "v", es: "poder", en: "to be able to", nt: "o→ue: puedo; pude; podré" },
+  { c: "ese", g: "v", es: "querer", en: "to want, to love", nt: "e→ie: quiero; quise; querré" },
+  { c: "ese", g: "v", es: "decir", en: "to say, to tell", nt: "digo; dije; dicho; diré" },
+  { c: "ese", g: "v", es: "saber", en: "to know (facts, how to)", nt: "yo sé; supe; sabré" },
+  { c: "ese", g: "v", es: "conocer", en: "to know (people, places)", nt: "yo conozco" },
+  { c: "ese", g: "v", es: "venir", en: "to come", nt: "vengo; vine; vendré" },
+  { c: "ese", g: "v", es: "dar", en: "to give", nt: "doy; pretérito di, dio" },
+  { c: "ese", g: "v", es: "ver", en: "to see, to watch", nt: "veo; vi; participio visto" },
+  { c: "ese", g: "v", es: "poner", en: "to put", nt: "pongo; puse; puesto" },
+  { c: "ese", g: "v", es: "salir", en: "to leave, to go out", nt: "yo salgo; futuro saldré" },
+  { c: "ese", g: "v", es: "traer", en: "to bring", nt: "traigo; pretérito traje" },
+  { c: "ese", g: "v", es: "oír", en: "to hear", nt: "oigo; gerundio oyendo" },
+  { c: "ese", g: "v", es: "hablar", en: "to speak" },
+  { c: "ese", g: "v", es: "comer", en: "to eat" },
+  { c: "ese", g: "v", es: "beber", en: "to drink" },
+  { c: "ese", g: "v", es: "vivir", en: "to live" },
+  { c: "ese", g: "v", es: "trabajar", en: "to work" },
+  { c: "ese", g: "v", es: "estudiar", en: "to study" },
+  { c: "ese", g: "v", es: "aprender", en: "to learn" },
+  { c: "ese", g: "v", es: "leer", en: "to read", nt: "gerundio leyendo; pretérito leyó" },
+  { c: "ese", g: "v", es: "escribir", en: "to write", nt: "participio escrito" },
+  { c: "ese", g: "v", es: "llegar", en: "to arrive" },
+  { c: "ese", g: "v", es: "empezar", en: "to begin, to start", nt: "e→ie: empiezo" },
+  { c: "ese", g: "v", es: "terminar", en: "to finish" },
+  { c: "ese", g: "v", es: "buscar", en: "to look for" },
+  { c: "ese", g: "v", es: "encontrar", en: "to find", nt: "o→ue: encuentro" },
+  { c: "ese", g: "v", es: "esperar", en: "to wait, to hope" },
+  { c: "ese", g: "v", es: "ayudar", en: "to help" },
+  { c: "ese", g: "v", es: "llamar", en: "to call" },
+  { c: "ese", g: "v", es: "llevar", en: "to carry, to take (time)" },
+  { c: "ese", g: "v", es: "dejar", en: "to leave (something), to let" },
+  { c: "ese", g: "v", es: "tomar", en: "to take, to drink" },
+  { c: "ese", g: "v", es: "usar", en: "to use" },
+  { c: "ese", g: "v", es: "necesitar", en: "to need" },
+  { c: "ese", g: "v", es: "pensar", en: "to think", nt: "e→ie: pienso" },
+  { c: "ese", g: "v", es: "creer", en: "to believe", nt: "gerundio creyendo" },
+  { c: "ese", g: "v", es: "entender", en: "to understand", nt: "e→ie: entiendo" },
+  { c: "ese", g: "v", es: "seguir", en: "to follow, to continue", nt: "e→i: sigo" },
+  { c: "ese", g: "v", es: "pedir", en: "to ask for, to order", nt: "e→i: pido" },
+  { c: "ese", g: "v", es: "preguntar", en: "to ask (a question)" },
+  { c: "ese", g: "v", es: "recordar", en: "to remember", nt: "o→ue: recuerdo" },
+  { c: "ese", g: "v", es: "olvidar", en: "to forget" },
+  { c: "ese", g: "v", es: "decidir", en: "to decide" },
+  { c: "ese", g: "v", es: "intentar", en: "to try" },
+  { c: "ese", g: "v", es: "deber", en: "should, to owe" },
+
+  { c: "dia", g: "v", es: "despertarse", en: "to wake up", nt: "e→ie: me despierto" },
+  { c: "dia", g: "v", es: "levantarse", en: "to get up" },
+  { c: "dia", g: "v", es: "ducharse", en: "to shower" },
+  { c: "dia", g: "v", es: "vestirse", en: "to get dressed", nt: "e→i: me visto" },
+  { c: "dia", g: "v", es: "desayunar", en: "to have breakfast" },
+  { c: "dia", g: "v", es: "almorzar", en: "to have lunch", nt: "o→ue: almuerzo" },
+  { c: "dia", g: "v", es: "cenar", en: "to have dinner" },
+  { c: "dia", g: "v", es: "cocinar", en: "to cook" },
+  { c: "dia", g: "v", es: "limpiar", en: "to clean" },
+  { c: "dia", g: "v", es: "lavar", en: "to wash" },
+  { c: "dia", g: "v", es: "comprar", en: "to buy" },
+  { c: "dia", g: "v", es: "pagar", en: "to pay" },
+  { c: "dia", g: "v", es: "gastar", en: "to spend (money)" },
+  { c: "dia", g: "v", es: "manejar", en: "to drive" },
+  { c: "dia", g: "v", es: "conducir", en: "to drive", nt: "conduzco; pretérito conduje" },
+  { c: "dia", g: "v", es: "caminar", en: "to walk" },
+  { c: "dia", g: "v", es: "descansar", en: "to rest" },
+  { c: "dia", g: "v", es: "dormir", en: "to sleep", nt: "o→ue: duermo; gerundio durmiendo" },
+  { c: "dia", g: "v", es: "acostarse", en: "to go to bed", nt: "o→ue: me acuesto" },
+  { c: "dia", g: "v", es: "cargar", en: "to charge, to carry" },
+  { c: "dia", g: "v", es: "apagar", en: "to turn off" },
+  { c: "dia", g: "v", es: "prender", en: "to turn on" },
+  { c: "dia", g: "v", es: "abrir", en: "to open", nt: "participio abierto" },
+  { c: "dia", g: "v", es: "cerrar", en: "to close", nt: "e→ie: cierro" },
+  { c: "dia", g: "v", es: "romper", en: "to break", nt: "participio roto" },
+  { c: "dia", g: "v", es: "arreglar", en: "to fix" },
+  { c: "dia", g: "v", es: "tirar", en: "to throw, to throw away" },
+  { c: "dia", g: "v", es: "guardar", en: "to put away, to keep" },
+  { c: "dia", g: "n", es: "la casa", en: "house" },
+  { c: "dia", g: "n", es: "el apartamento", en: "apartment" },
+  { c: "dia", g: "n", es: "la llave", en: "key" },
+  { c: "dia", g: "n", es: "la puerta", en: "door" },
+  { c: "dia", g: "n", es: "la ventana", en: "window" },
+  { c: "dia", g: "n", es: "el baño", en: "bathroom" },
+  { c: "dia", g: "n", es: "la cocina", en: "kitchen" },
+  { c: "dia", g: "n", es: "el cuarto", en: "room, bedroom" },
+  { c: "dia", g: "n", es: "la cama", en: "bed" },
+  { c: "dia", g: "n", es: "el piso", en: "floor, apartment (Spain)" },
+  { c: "dia", g: "n", es: "el techo", en: "roof, ceiling" },
+  { c: "dia", g: "n", es: "la luz", en: "light" },
+  { c: "dia", g: "n", es: "el cargador", en: "charger" },
+  { c: "dia", g: "n", es: "el teléfono", en: "phone" },
+  { c: "dia", g: "n", es: "la ropa", en: "clothes" },
+  { c: "dia", g: "n", es: "el vestido", en: "dress" },
+  { c: "dia", g: "n", es: "los zapatos", en: "shoes" },
+  { c: "dia", g: "n", es: "el pan", en: "bread" },
+  { c: "dia", g: "n", es: "el café", en: "coffee" },
+  { c: "dia", g: "n", es: "la comida", en: "food, meal" },
+  { c: "dia", g: "n", es: "el dinero", en: "money" },
+  { c: "dia", g: "n", es: "la cuenta", en: "bill, account" },
+  { c: "dia", g: "n", es: "el horario", en: "schedule" },
+  { c: "dia", g: "n", es: "la basura", en: "trash" },
+  { c: "dia", g: "n", es: "el ruido", en: "noise" },
+  { c: "dia", g: "adv", es: "ya", en: "already, now" },
+  { c: "dia", g: "adv", es: "todavía", en: "still, yet" },
+  { c: "dia", g: "adv", es: "casi", en: "almost" },
+  { c: "dia", g: "adv", es: "temprano", en: "early" },
+  { c: "dia", g: "adv", es: "tarde", en: "late", nt: "tardísimo: super late" },
+  { c: "dia", g: "adv", es: "siempre", en: "always" },
+  { c: "dia", g: "adv", es: "nunca", en: "never" },
+  { c: "dia", g: "adv", es: "a veces", en: "sometimes" },
+  { c: "dia", g: "adv", es: "normalmente", en: "usually" },
+  { c: "dia", g: "adv", es: "generalmente", en: "generally, for the most part" },
+  { c: "dia", g: "adv", es: "últimamente", en: "lately" },
+  { c: "dia", g: "adv", es: "demasiado", en: "too much" },
+  { c: "dia", g: "adv", es: "bastante", en: "quite, plenty" },
+  { c: "dia", g: "adv", es: "de repente", en: "suddenly" },
+  { c: "dia", g: "adv", es: "mientras", en: "while" },
+  { c: "dia", g: "adv", es: "luego", en: "later, then" },
+
+  { c: "emo", g: "a", es: "feliz", en: "happy", nt: "same form for both" },
+  { c: "emo", g: "a", es: "contento/a", en: "glad, pleased" },
+  { c: "emo", g: "a", es: "triste", en: "sad", nt: "same form for both" },
+  { c: "emo", g: "a", es: "cansado/a", en: "tired" },
+  { c: "emo", g: "a", es: "agotado/a", en: "exhausted" },
+  { c: "emo", g: "a", es: "estresado/a", en: "stressed" },
+  { c: "emo", g: "a", es: "tranquilo/a", en: "calm" },
+  { c: "emo", g: "a", es: "nervioso/a", en: "nervous" },
+  { c: "emo", g: "a", es: "enojado/a", en: "angry" },
+  { c: "emo", g: "a", es: "emocionado/a", en: "excited" },
+  { c: "emo", g: "a", es: "aburrido/a", en: "bored, boring" },
+  { c: "emo", g: "a", es: "preocupado/a", en: "worried" },
+  { c: "emo", g: "a", es: "sorprendido/a", en: "surprised" },
+  { c: "emo", g: "a", es: "asustado/a", en: "scared" },
+  { c: "emo", g: "a", es: "orgulloso/a", en: "proud" },
+  { c: "emo", g: "a", es: "celoso/a", en: "jealous" },
+  { c: "emo", g: "a", es: "deprimido/a", en: "depressed" },
+  { c: "emo", g: "a", es: "avergonzado/a", en: "embarrassed" },
+  { c: "emo", g: "a", es: "incómodo/a", en: "uncomfortable, awkward" },
+  { c: "emo", g: "v", es: "sentirse", en: "to feel", nt: "e→ie: me siento" },
+  { c: "emo", g: "v", es: "enojarse", en: "to get angry" },
+  { c: "emo", g: "v", es: "preocuparse", en: "to worry" },
+  { c: "emo", g: "v", es: "relajarse", en: "to relax" },
+  { c: "emo", g: "v", es: "calmarse", en: "to calm down" },
+  { c: "emo", g: "v", es: "llorar", en: "to cry" },
+  { c: "emo", g: "v", es: "reír", en: "to laugh", nt: "río; gerundio riendo" },
+  { c: "emo", g: "v", es: "sonreír", en: "to smile", nt: "sonrío" },
+  { c: "emo", g: "v", es: "quejarse", en: "to complain" },
+  { c: "emo", g: "v", es: "disfrutar", en: "to enjoy" },
+  { c: "emo", g: "v", es: "extrañar", en: "to miss (someone)" },
+  { c: "emo", g: "v", es: "odiar", en: "to hate" },
+  { c: "emo", g: "v", es: "amar", en: "to love" },
+  { c: "emo", g: "v", es: "encantar", en: "to delight", nt: "works like gustar: me encanta" },
+  { c: "emo", g: "v", es: "molestar", en: "to bother", nt: "works like gustar: me molesta" },
+  { c: "emo", g: "n", es: "el estrés", en: "stress" },
+  { c: "emo", g: "n", es: "el miedo", en: "fear" },
+  { c: "emo", g: "n", es: "la alegría", en: "joy" },
+  { c: "emo", g: "n", es: "el dolor", en: "pain" },
+  { c: "emo", g: "n", es: "el sueño", en: "sleep, dream" },
+  { c: "emo", g: "n", es: "las ganas", en: "the urge, the desire", nt: "tener ganas de: to feel like" }
+];
+VB.push.apply(VB, [
+  { c: "des", g: "a", es: "fácil", en: "easy", nt: "same form for both" },
+  { c: "des", g: "a", es: "difícil", en: "difficult", nt: "same form for both" },
+  { c: "des", g: "a", es: "importante", en: "important", nt: "same form for both" },
+  { c: "des", g: "a", es: "interesante", en: "interesting", nt: "same form for both" },
+  { c: "des", g: "a", es: "rápido/a", en: "fast" },
+  { c: "des", g: "a", es: "lento/a", en: "slow" },
+  { c: "des", g: "a", es: "bueno/a", en: "good" },
+  { c: "des", g: "a", es: "malo/a", en: "bad" },
+  { c: "des", g: "a", es: "grande", en: "big", nt: "same form for both" },
+  { c: "des", g: "a", es: "pequeño/a", en: "small" },
+  { c: "des", g: "a", es: "nuevo/a", en: "new" },
+  { c: "des", g: "a", es: "viejo/a", en: "old" },
+  { c: "des", g: "a", es: "joven", en: "young", nt: "same form for both" },
+  { c: "des", g: "a", es: "caro/a", en: "expensive" },
+  { c: "des", g: "a", es: "barato/a", en: "cheap" },
+  { c: "des", g: "a", es: "raro/a", en: "weird" },
+  { c: "des", g: "a", es: "extraño/a", en: "strange" },
+  { c: "des", g: "a", es: "fuerte", en: "strong, hard (rain, noise)", nt: "same form for both" },
+  { c: "des", g: "a", es: "serio/a", en: "serious" },
+  { c: "des", g: "a", es: "limpio/a", en: "clean" },
+  { c: "des", g: "a", es: "sucio/a", en: "dirty" },
+  { c: "des", g: "a", es: "lleno/a", en: "full" },
+  { c: "des", g: "a", es: "vacío/a", en: "empty" },
+  { c: "des", g: "a", es: "pesado/a", en: "heavy, annoying" },
+  { c: "des", g: "a", es: "ligero/a", en: "light" },
+  { c: "des", g: "a", es: "alto/a", en: "tall, high" },
+  { c: "des", g: "a", es: "bajo/a", en: "short, low" },
+  { c: "des", g: "a", es: "largo/a", en: "long", nt: "not large; that is grande" },
+  { c: "des", g: "a", es: "corto/a", en: "short (length)" },
+  { c: "des", g: "a", es: "listo/a", en: "smart / ready", nt: "ser listo: smart; estar listo: ready" },
+  { c: "des", g: "a", es: "postizo/a", en: "fake, false (nails, teeth)" },
+  { c: "des", g: "a", es: "-ísimo/a", en: "very, super", nt: "tack it on: buenísimo, carísimo, tardísimo" },
+  { c: "des", g: "n", es: "el problema", en: "problem", nt: "masculine, watch the -a" },
+  { c: "des", g: "n", es: "el día", en: "day", nt: "masculine, watch the -a" },
+  { c: "des", g: "n", es: "el idioma", en: "language", nt: "masculine, watch the -a" },
+  { c: "des", g: "n", es: "el mapa", en: "map", nt: "masculine, watch the -a" },
+  { c: "des", g: "n", es: "la mano", en: "hand", nt: "feminine, watch the -o" },
+  { c: "des", g: "n", es: "la foto", en: "photo", nt: "feminine: la fotografía" },
+  { c: "des", g: "n", es: "el agua", en: "water", nt: "feminine, but takes el: el agua fría" },
+
+  { c: "dir", g: "v", es: "girar", en: "to turn" },
+  { c: "dir", g: "v", es: "doblar", en: "to turn, to fold" },
+  { c: "dir", g: "v", es: "cruzar", en: "to cross" },
+  { c: "dir", g: "v", es: "subir", en: "to go up, to get on" },
+  { c: "dir", g: "v", es: "bajar", en: "to go down, to get off" },
+  { c: "dir", g: "v", es: "parar", en: "to stop" },
+  { c: "dir", g: "v", es: "entrar", en: "to enter" },
+  { c: "dir", g: "v", es: "dar la vuelta", en: "to turn around" },
+  { c: "dir", g: "v", es: "estacionar", en: "to park" },
+  { c: "dir", g: "v", es: "perderse", en: "to get lost", nt: "e→ie: me pierdo" },
+  { c: "dir", g: "f", es: "a la izquierda", en: "to the left" },
+  { c: "dir", g: "f", es: "a la derecha", en: "to the right" },
+  { c: "dir", g: "f", es: "todo recto / todo derecho", en: "straight ahead" },
+  { c: "dir", g: "f", es: "cerca de", en: "near" },
+  { c: "dir", g: "f", es: "lejos de", en: "far from" },
+  { c: "dir", g: "f", es: "al lado de", en: "next to" },
+  { c: "dir", g: "f", es: "enfrente de", en: "in front of, across from" },
+  { c: "dir", g: "f", es: "detrás de", en: "behind" },
+  { c: "dir", g: "f", es: "entre", en: "between" },
+  { c: "dir", g: "f", es: "hasta", en: "until, up to" },
+  { c: "dir", g: "f", es: "en la esquina", en: "on the corner" },
+  { c: "dir", g: "n", es: "la calle", en: "street" },
+  { c: "dir", g: "n", es: "la avenida", en: "avenue" },
+  { c: "dir", g: "n", es: "la cuadra", en: "block" },
+  { c: "dir", g: "n", es: "el semáforo", en: "traffic light" },
+  { c: "dir", g: "n", es: "la esquina", en: "corner" },
+  { c: "dir", g: "n", es: "la parada", en: "bus stop" },
+  { c: "dir", g: "n", es: "el metro", en: "subway" },
+  { c: "dir", g: "n", es: "el autobús", en: "bus" },
+  { c: "dir", g: "n", es: "el centro", en: "downtown" },
+  { c: "dir", g: "n", es: "el puente", en: "bridge" },
+  { c: "dir", g: "n", es: "la salida", en: "exit" },
+  { c: "dir", g: "n", es: "la entrada", en: "entrance" },
+
+  { c: "tra", g: "v", es: "solicitar", en: "to apply for, to request" },
+  { c: "tra", g: "v", es: "exigir", en: "to demand", nt: "yo exijo" },
+  { c: "tra", g: "v", es: "prometer", en: "to promise" },
+  { c: "tra", g: "v", es: "discutir", en: "to discuss, to argue" },
+  { c: "tra", g: "v", es: "aprobar", en: "to approve, to pass (a test)", nt: "o→ue: apruebo" },
+  { c: "tra", g: "v", es: "construir", en: "to build", nt: "construyo; gerundio construyendo" },
+  { c: "tra", g: "v", es: "explicar", en: "to explain" },
+  { c: "tra", g: "v", es: "aceptar", en: "to accept" },
+  { c: "tra", g: "v", es: "rechazar", en: "to refuse, to reject" },
+  { c: "tra", g: "v", es: "negar", en: "to deny", nt: "e→ie: niego" },
+  { c: "tra", g: "v", es: "enseñar", en: "to teach, to show" },
+  { c: "tra", g: "v", es: "practicar", en: "to practice" },
+  { c: "tra", g: "v", es: "mejorar", en: "to improve" },
+  { c: "tra", g: "v", es: "lograr", en: "to achieve, to manage to" },
+  { c: "tra", g: "v", es: "conseguir", en: "to get, to obtain", nt: "e→i: consigo" },
+  { c: "tra", g: "v", es: "renunciar", en: "to quit (a job)" },
+  { c: "tra", g: "v", es: "contratar", en: "to hire" },
+  { c: "tra", g: "v", es: "firmar", en: "to sign" },
+  { c: "tra", g: "v", es: "enviar", en: "to send", nt: "yo envío" },
+  { c: "tra", g: "v", es: "recibir", en: "to receive" },
+  { c: "tra", g: "v", es: "ofrecer", en: "to offer", nt: "yo ofrezco" },
+  { c: "tra", g: "v", es: "convertir", en: "to convert, to turn into", nt: "e→ie: convierto" },
+  { c: "tra", g: "v", es: "sustituir", en: "to substitute, to replace", nt: "sustituyo" },
+  { c: "tra", g: "v", es: "ocurrir", en: "to occur, to happen" },
+  { c: "tra", g: "n", es: "el trabajo", en: "work, job" },
+  { c: "tra", g: "n", es: "la oficina", en: "office" },
+  { c: "tra", g: "n", es: "la reunión", en: "meeting" },
+  { c: "tra", g: "n", es: "el jefe / la jefa", en: "boss" },
+  { c: "tra", g: "n", es: "el sueldo", en: "salary" },
+  { c: "tra", g: "n", es: "el ascenso", en: "promotion" },
+  { c: "tra", g: "n", es: "la entrevista", en: "interview" },
+  { c: "tra", g: "n", es: "la carrera", en: "career, degree; also race" },
+  { c: "tra", g: "n", es: "el proyecto", en: "project" },
+  { c: "tra", g: "n", es: "la financiación", en: "funding" },
+  { c: "tra", g: "n", es: "la empresa", en: "company" },
+  { c: "tra", g: "n", es: "el cliente / la clienta", en: "client" },
+  { c: "tra", g: "n", es: "la tarea", en: "homework, task" },
+  { c: "tra", g: "n", es: "el examen", en: "exam" },
+  { c: "tra", g: "n", es: "la prepa", en: "high school (Mexico)" },
+  { c: "tra", g: "n", es: "la universidad", en: "university" },
+  { c: "tra", g: "n", es: "la beca", en: "scholarship" },
+  { c: "tra", g: "n", es: "el correo", en: "mail, email" },
+
+  { c: "dep", g: "v", es: "jugar", en: "to play (a game, a sport)", nt: "u→ue: juego" },
+  { c: "dep", g: "v", es: "correr", en: "to run" },
+  { c: "dep", g: "v", es: "nadar", en: "to swim" },
+  { c: "dep", g: "v", es: "entrenar", en: "to train" },
+  { c: "dep", g: "v", es: "ganar", en: "to win, to earn" },
+  { c: "dep", g: "v", es: "perder", en: "to lose", nt: "e→ie: pierdo" },
+  { c: "dep", g: "v", es: "saltar", en: "to jump" },
+  { c: "dep", g: "v", es: "lanzar", en: "to throw (a ball)" },
+  { c: "dep", g: "v", es: "patear", en: "to kick" },
+  { c: "dep", g: "v", es: "levantar pesas", en: "to lift weights" },
+  { c: "dep", g: "v", es: "montar en bici", en: "to ride a bike" },
+  { c: "dep", g: "v", es: "sudar", en: "to sweat" },
+  { c: "dep", g: "v", es: "estirar", en: "to stretch" },
+  { c: "dep", g: "v", es: "competir", en: "to compete", nt: "e→i: compito" },
+  { c: "dep", g: "n", es: "el partido", en: "match, game" },
+  { c: "dep", g: "n", es: "el equipo", en: "team" },
+  { c: "dep", g: "n", es: "el gol", en: "goal" },
+  { c: "dep", g: "n", es: "el balón / la pelota", en: "ball" },
+  { c: "dep", g: "n", es: "la cancha", en: "court, field" },
+  { c: "dep", g: "n", es: "el gimnasio", en: "gym" },
+  { c: "dep", g: "n", es: "las pesas", en: "weights" },
+  { c: "dep", g: "n", es: "la carrera", en: "race" },
+  { c: "dep", g: "n", es: "el campeonato", en: "championship" },
+  { c: "dep", g: "n", es: "el árbitro", en: "referee" },
+  { c: "dep", g: "n", es: "el entrenador / la entrenadora", en: "coach" },
+  { c: "dep", g: "n", es: "el marcador", en: "scoreboard, score" },
+
+  { c: "ent", g: "v", es: "escuchar", en: "to listen" },
+  { c: "ent", g: "v", es: "mirar", en: "to watch, to look at" },
+  { c: "ent", g: "v", es: "tocar", en: "to play (an instrument), to touch" },
+  { c: "ent", g: "v", es: "cantar", en: "to sing" },
+  { c: "ent", g: "v", es: "bailar", en: "to dance" },
+  { c: "ent", g: "v", es: "grabar", en: "to record" },
+  { c: "ent", g: "v", es: "actuar", en: "to act", nt: "yo actúo" },
+  { c: "ent", g: "v", es: "estrenar", en: "to premiere, to debut" },
+  { c: "ent", g: "v", es: "celebrar", en: "to celebrate" },
+  { c: "ent", g: "v", es: "invitar", en: "to invite" },
+  { c: "ent", g: "n", es: "la película", en: "movie" },
+  { c: "ent", g: "n", es: "la serie", en: "series, show" },
+  { c: "ent", g: "n", es: "la canción", en: "song" },
+  { c: "ent", g: "n", es: "el concierto", en: "concert" },
+  { c: "ent", g: "n", es: "la banda", en: "band" },
+  { c: "ent", g: "n", es: "el boleto / la entrada", en: "ticket" },
+  { c: "ent", g: "n", es: "la pantalla", en: "screen" },
+  { c: "ent", g: "n", es: "el escenario", en: "stage" },
+  { c: "ent", g: "n", es: "la temporada", en: "season (of a show)" },
+  { c: "ent", g: "n", es: "el capítulo", en: "episode, chapter" },
+  { c: "ent", g: "n", es: "la fiesta", en: "party" },
+  { c: "ent", g: "n", es: "la música", en: "music" },
+  { c: "ent", g: "n", es: "el chisme", en: "gossip" },
+  { c: "ent", g: "n", es: "las redes sociales", en: "social media" },
+  { c: "ent", g: "n", es: "el juego", en: "game" },
+  { c: "ent", g: "n", es: "el cine", en: "movie theater, cinema" },
+
+  { c: "gen", g: "n", es: "la familia", en: "family" },
+  { c: "gen", g: "n", es: "los padres", en: "parents" },
+  { c: "gen", g: "n", es: "la madre / la mamá", en: "mother / mom" },
+  { c: "gen", g: "n", es: "el padre / el papá", en: "father / dad" },
+  { c: "gen", g: "n", es: "el hermano / la hermana", en: "brother / sister" },
+  { c: "gen", g: "n", es: "el hijo / la hija", en: "son / daughter" },
+  { c: "gen", g: "n", es: "el abuelo / la abuela", en: "grandfather / grandmother" },
+  { c: "gen", g: "n", es: "el tío / la tía", en: "uncle / aunt" },
+  { c: "gen", g: "n", es: "el primo / la prima", en: "cousin" },
+  { c: "gen", g: "n", es: "el sobrino / la sobrina", en: "nephew / niece" },
+  { c: "gen", g: "n", es: "el cuñado / la cuñada", en: "brother-in-law / sister-in-law" },
+  { c: "gen", g: "n", es: "el suegro / la suegra", en: "father-in-law / mother-in-law" },
+  { c: "gen", g: "n", es: "el novio / la novia", en: "boyfriend / girlfriend" },
+  { c: "gen", g: "n", es: "el esposo / la esposa", en: "husband / wife" },
+  { c: "gen", g: "n", es: "la boda", en: "wedding" },
+  { c: "gen", g: "n", es: "la dama de honor", en: "maid of honor" },
+  { c: "gen", g: "n", es: "el vecino / la vecina", en: "neighbor" },
+  { c: "gen", g: "n", es: "el amigo / la amiga", en: "friend" },
+  { c: "gen", g: "n", es: "el casero / la casera", en: "landlord / landlady" },
+  { c: "gen", g: "n", es: "la gente", en: "people", nt: "singular in Spanish: la gente es" },
+  { c: "gen", g: "v", es: "casarse", en: "to get married" },
+  { c: "gen", g: "v", es: "divorciarse", en: "to get divorced" },
+  { c: "gen", g: "v", es: "criar", en: "to raise (kids)", nt: "yo crío" },
+  { c: "gen", g: "v", es: "cuidar", en: "to take care of" },
+  { c: "gen", g: "v", es: "pelear", en: "to fight" },
+  { c: "gen", g: "v", es: "confiar", en: "to trust", nt: "yo confío" },
+  { c: "gen", g: "v", es: "mentir", en: "to lie", nt: "e→ie: miento" },
+  { c: "gen", g: "v", es: "perdonar", en: "to forgive" },
+  { c: "gen", g: "a", es: "amable", en: "kind", nt: "same form for both" },
+  { c: "gen", g: "a", es: "simpático/a", en: "nice, friendly" },
+  { c: "gen", g: "a", es: "tímido/a", en: "shy" },
+  { c: "gen", g: "a", es: "trabajador/a", en: "hardworking" },
+  { c: "gen", g: "a", es: "flojo/a", en: "lazy (Mexico)" },
+  { c: "gen", g: "a", es: "malcriado/a", en: "spoiled, bratty" },
+
+  { c: "fra", g: "f", es: "darse cuenta", en: "to realize" },
+  { c: "fra", g: "f", es: "darse de baja", en: "to unsubscribe" },
+  { c: "fra", g: "f", es: "acabar de + infinitivo", en: "to have just done: acabo de llegar" },
+  { c: "fra", g: "f", es: "estar a punto de", en: "to be about to: estoy a punto de irme" },
+  { c: "fra", g: "f", es: "tener que + infinitivo", en: "to have to: tengo que trabajar" },
+  { c: "fra", g: "f", es: "hay que + infinitivo", en: "one has to, we should: hay que ir" },
+  { c: "fra", g: "f", es: "tener ganas de", en: "to feel like: tengo ganas de bailar" },
+  { c: "fra", g: "f", es: "soler + infinitivo", en: "to usually do: suelo caminar", nt: "o→ue: suelo" },
+  { c: "fra", g: "f", es: "volver a + infinitivo", en: "to do again: volví a llamar", nt: "o→ue: vuelvo" },
+  { c: "fra", g: "f", es: "dejar de + infinitivo", en: "to stop doing: dejé de fumar" },
+  { c: "fra", g: "f", es: "pensar en + infinitivo", en: "thinking about doing something" },
+  { c: "fra", g: "f", es: "pensar sobre + tema", en: "thinking about a topic" },
+  { c: "fra", g: "f", es: "qué onda", en: "what's up, what's the deal (Mexico)" },
+  { c: "fra", g: "f", es: "no estoy seguro/a todavía", en: "I'm not sure yet" },
+  { c: "fra", g: "f", es: "la verdad, no sé", en: "honestly, I don't know" },
+  { c: "fra", g: "f", es: "deséame suerte", en: "wish me luck" },
+  { c: "fra", g: "f", es: "cuídate", en: "take care" },
+  { c: "fra", g: "f", es: "pasar volando", en: "to fly by: el año pasó volando" },
+  { c: "fra", g: "f", es: "meterse en todo", en: "to get into everything, to meddle" },
+  { c: "fra", g: "f", es: "le vale", en: "couldn't care less (Mexico)" },
+  { c: "fra", g: "f", es: "para colmo", en: "to top it all off" },
+  { c: "fra", g: "f", es: "la mayor parte", en: "most of it" },
+  { c: "fra", g: "f", es: "por si acaso", en: "just in case" },
+  { c: "fra", g: "f", es: "ni modo", en: "oh well, nothing to be done (Mexico)" },
+  { c: "fra", g: "f", es: "nací listo", en: "I was born ready" }
+]);
+
+(function vocabWall() {
+  "use strict";
+  var wall = document.getElementById("vbWall");
+  if (!wall) return;
+  var chipsBox = document.getElementById("vbChips");
+  var searchEl = document.getElementById("vbSearch");
+  var countEl = document.getElementById("vbCount");
+  var emptyEl = document.getElementById("vbEmpty");
+  var cat = "all";
+  var q = "";
+  var GORDER = ["v", "n", "a", "adv", "f"];
+
+  function fold(s) { return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
+  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+
+  function build() {
+    var html = "";
+    Object.keys(VB_CATS).forEach(function (ck) {
+      var rowsAll = VB.filter(function (e) { return e.c === ck; });
+      html += '<section class="vb-panel" data-c="' + ck + '">' +
+        '<div class="vb-head"><h3 class="fg-phrase">' + esc(VB_CATS[ck].label) + '</h3>' +
+        '<span class="vb-n">' + rowsAll.length + ' palabras</span></div>' +
+        '<p class="fg-gloss">' + esc(VB_CATS[ck].desc) + '</p>';
+      GORDER.forEach(function (gk) {
+        var rows = rowsAll.filter(function (e) { return e.g === gk; });
+        if (!rows.length) return;
+        html += '<div class="vb-group"><span class="label vb-glab">' + esc(VB_GROUPS[gk]) + '</span><table class="tv-table">';
+        rows.forEach(function (e) {
+          html += '<tr class="vb-row" data-hay="' + esc(fold(e.es + " " + e.en + " " + (e.nt || ""))) + '">' +
+            '<td>' + esc(e.es) + '</td><td>' + esc(e.en) + '</td><td>' + (e.nt ? esc(e.nt) : "") + '</td></tr>';
+        });
+        html += '</table></div>';
+      });
+      html += '</section>';
+    });
+    wall.innerHTML = html;
+  }
+
+  function apply() {
+    var fq = fold(q.trim());
+    var total = 0;
+    wall.querySelectorAll(".vb-panel").forEach(function (panel) {
+      var pShow = cat === "all" || cat === panel.getAttribute("data-c");
+      var pCount = 0;
+      panel.querySelectorAll(".vb-group").forEach(function (grp) {
+        var gCount = 0;
+        grp.querySelectorAll(".vb-row").forEach(function (row) {
+          var ok = pShow && (fq === "" || row.getAttribute("data-hay").indexOf(fq) !== -1);
+          row.style.display = ok ? "" : "none";
+          if (ok) gCount++;
+        });
+        grp.style.display = gCount ? "" : "none";
+        pCount += gCount;
+      });
+      panel.style.display = pCount ? "" : "none";
+      total += pCount;
+    });
+    emptyEl.hidden = total !== 0;
+    countEl.textContent = "Showing " + total + " of " + VB.length + " palabras";
+  }
+
+  chipsBox.innerHTML = '<button type="button" class="fg-chip vbc" data-c="all" aria-pressed="true">All</button>' +
+    Object.keys(VB_CATS).map(function (k) {
+      return '<button type="button" class="fg-chip vbc" data-c="' + k + '" aria-pressed="false">' + esc(VB_CATS[k].label) + '</button>';
+    }).join("");
+  chipsBox.addEventListener("click", function (ev) {
+    var chip = ev.target.closest(".fg-chip");
+    if (!chip) return;
+    cat = chip.getAttribute("data-c");
+    chipsBox.querySelectorAll(".fg-chip").forEach(function (x) {
+      x.setAttribute("aria-pressed", x === chip ? "true" : "false");
+    });
+    apply();
+  });
+  searchEl.addEventListener("input", function () { q = searchEl.value; apply(); });
+
+  build();
+  apply();
+})();
+
+
 /* ============================================================
    @ANCHOR:REP_DEMO_LOGIC
    ============================================================ */
@@ -2514,6 +3068,9 @@ function route() {
     window.scrollTo(0, 0);
   } else if (h === "#/guias/tiempos") {
     document.body.dataset.view = "tenses";
+    window.scrollTo(0, 0);
+  } else if (h === "#/guias/vocabulario") {
+    document.body.dataset.view = "vocab";
     window.scrollTo(0, 0);
   } else if (h === "#/cuenta") {
     document.body.dataset.view = "cuenta";
