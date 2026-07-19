@@ -727,6 +727,75 @@ body[data-view="tenses"] .view-tenses { display: block; }
 .tv-table tr:last-child td { border-bottom: 0; }
 
 /* ============================================================
+   GYM MENU SECTIONS + CUENTA + LEGAL PAGES
+   @ANCHOR:CUENTA_CSS
+   ============================================================ */
+.gym-menu { max-height: calc(100vh - 120px); overflow-y: auto; }
+.gm-item.gm-soon { opacity: .45; cursor: default; }
+.gm-item.gm-soon:hover { background: none; color: var(--ink); }
+.gm-tag {
+  display: inline-block; margin-left: 7px; padding: 2px 8px 3px;
+  border: 1.5px solid currentColor; border-radius: 999px;
+  font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  vertical-align: 1px;
+}
+
+.view-cuenta { display: none; padding: 84px 0 110px; }
+body[data-view="cuenta"] .view-home,
+body[data-view="cuenta"] .view-auth,
+body[data-view="cuenta"] .view-floor,
+body[data-view="cuenta"] .band-close { display: none; }
+body[data-view="cuenta"] .view-cuenta { display: block; }
+
+.cuenta-out { text-align: center; }
+.cuenta-out p { opacity: .8; margin-bottom: 20px; }
+
+.view-contacto { display: none; }
+body[data-view="contacto"] .view-home,
+body[data-view="contacto"] .view-auth,
+body[data-view="contacto"] .view-floor,
+body[data-view="contacto"] .band-close { display: none; }
+body[data-view="contacto"] .view-contacto { display: block; }
+
+.view-terminos { display: none; }
+body[data-view="terminos"] .view-home,
+body[data-view="terminos"] .view-auth,
+body[data-view="terminos"] .view-floor,
+body[data-view="terminos"] .band-close { display: none; }
+body[data-view="terminos"] .view-terminos { display: block; }
+
+.view-privacidad { display: none; }
+body[data-view="privacidad"] .view-home,
+body[data-view="privacidad"] .view-auth,
+body[data-view="privacidad"] .view-floor,
+body[data-view="privacidad"] .band-close { display: none; }
+body[data-view="privacidad"] .view-privacidad { display: block; }
+
+.legal { padding: 46px 0 96px; }
+.legal .lwrap { max-width: 760px; }
+.legal h2 {
+  font-family: var(--body);
+  font-weight: 1000;
+  font-size: clamp(28px, 3.7vw, 44px);
+  letter-spacing: -0.005em;
+  margin-bottom: 8px;
+}
+.legal .sub { display: block; color: var(--ink); opacity: .78; font-size: 17px; margin-bottom: 8px; }
+.legal h3 {
+  font-family: var(--body);
+  font-weight: 850;
+  font-size: 19px;
+  margin: 34px 0 8px;
+}
+.legal p { margin: 0 0 12px; line-height: 1.65; font-size: 16px; }
+.legal .lmeta { margin-top: 44px; font-size: 13.5px; opacity: .55; }
+
+.footer-legal { display: flex; align-items: center; gap: 8px; font-size: 13.5px; }
+.footer-legal a { color: rgba(250,245,236,.62); text-decoration: none; }
+.footer-legal a:hover { color: var(--cream); text-decoration: underline; }
+.footer-legal .dot { opacity: .45; }
+
+/* ============================================================
    CLOSE BAND
    ============================================================ */
 .band-close { background: var(--ink); color: var(--cream); padding: 92px 0 0; position: relative; overflow: hidden; }
@@ -1024,11 +1093,19 @@ body[data-view="tenses"] .view-tenses { display: block; }
       <a class="nav-enter" id="navEnter" href="#/entrar">Sign in</a>
       <a class="btn btn-azul" id="navJoin" href="#/join">Join the gym</a>
       <div class="gym-menu" id="gymMenu" hidden>
+        <span class="label gm-label">Mi gimnasio</span>
         <a class="gm-item" href="#/floor">El piso</a>
+        <a class="gm-item" href="./transcription-challenge.html">Transcription Challenge</a>
+        <a class="gm-item" href="./ear-maze.html">Ear Maze</a>
+        <span class="gm-item gm-soon">Como Se Dice <span class="gm-tag">En construcción</span></span>
         <div class="gm-sep" aria-hidden="true"></div>
         <span class="label gm-label">Guías de referencia</span>
         <a class="gm-item" href="#/guias/misheard">Mishearing Field Guide</a>
         <a class="gm-item" href="#/guias/tiempos">Tiempos Verbales</a>
+        <div class="gm-sep" aria-hidden="true"></div>
+        <span class="label gm-label">Cuenta</span>
+        <a class="gm-item" href="#/cuenta">Mi cuenta</a>
+        <a class="gm-item" href="#/" id="menuSalir">Salir</a>
       </div>
     </nav>
   </div>
@@ -1514,6 +1591,128 @@ body[data-view="tenses"] .view-tenses { display: block; }
 </div>
 
 <!-- ============================================================
+     @ANCHOR:VIEW_CUENTA
+     ============================================================ -->
+<div class="view-cuenta">
+  <div class="wrap">
+    <div class="auth-wrap">
+      <div class="auth-card">
+        <div class="auth-head">
+          <div class="bloom" data-bloom></div>
+          <h1>Mi cuenta</h1>
+          <p>Your gym card details. Change what needs changing.</p>
+        </div>
+        <form id="cuentaForm" hidden novalidate>
+          <div class="field">
+            <label for="cEmail">Email <span class="opt">(fixed to your card)</span></label>
+            <input id="cEmail" name="email" type="email" readonly />
+          </div>
+          <div class="field">
+            <label for="cName">What should we call you? <span class="opt">(optional)</span></label>
+            <input id="cName" name="name" type="text" autocomplete="given-name" placeholder="Remo" />
+          </div>
+          <button class="btn btn-azul auth-submit" id="cuentaSave" type="submit">Save my card</button>
+          <p class="auth-note" id="cuentaNote"></p>
+          <p class="auth-peek"><a class="textlink" id="cuentaSalir" href="#/">Sign out of the gym</a></p>
+        </form>
+        <div class="cuenta-out" id="cuentaOut" hidden>
+          <p>You are not signed in, so there is no card to show.</p>
+          <a class="btn btn-azul" href="#/entrar">Sign in</a>
+          <p class="auth-peek"><a class="textlink" href="#/join">Or join the gym</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     @ANCHOR:VIEW_CONTACTO
+     ============================================================ -->
+<div class="view-contacto">
+  <section class="legal">
+    <div class="wrap lwrap">
+      <a class="guide-back" href="#/"><svg viewBox="0 0 90 30" aria-hidden="true"><path d="M86 16 Q 50 6, 16 15" fill="none" stroke="#DB7F8E" stroke-width="5" stroke-linecap="round"/><path d="M24 6 L 12 15 L 27 21" fill="none" stroke="#DB7F8E" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Back to the gym</span></a>
+      <span class="label fg-kicker">Habla con nosotros</span>
+      <h2>Contacto</h2>
+      <span class="sub">One inbox, read by a human.</span>
+      <p>Questions, ideas, a phrase that fooled your ear, or trouble with your gym card. Write and we will read it.</p>
+      <p><a class="textlink" href="mailto:hola@lingoharmony.com">hola@lingoharmony.com</a></p>
+      <p>We answer within a couple of days, usually faster.</p>
+    </div>
+  </section>
+</div>
+
+<!-- ============================================================
+     @ANCHOR:VIEW_TERMINOS
+     ============================================================ -->
+<div class="view-terminos">
+  <section class="legal">
+    <div class="wrap lwrap">
+      <a class="guide-back" href="#/"><svg viewBox="0 0 90 30" aria-hidden="true"><path d="M86 16 Q 50 6, 16 15" fill="none" stroke="#DB7F8E" stroke-width="5" stroke-linecap="round"/><path d="M24 6 L 12 15 L 27 21" fill="none" stroke="#DB7F8E" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Back to the gym</span></a>
+      <span class="label fg-kicker">Las reglas de la casa</span>
+      <h2>T&eacute;rminos y condiciones</h2>
+      <span class="sub">The house rules, in plain language.</span>
+      <h3>Who we are</h3>
+      <p>Lingo Harmony is run by Elastic Harmony LLC, a company based in New York, USA. When these pages say we or us, that is who we mean.</p>
+      <h3>What the gym is</h3>
+      <p>Lingo Harmony is a browser training gym for Spanish listening. You play the stations, your ear gets stronger. We work hard on the material, but we do not promise it is perfect or that the gym is open every minute of every day.</p>
+      <h3>Your gym card</h3>
+      <p>Your account is yours. Use a real email, keep your password to yourself, and tell us if something looks wrong. You can close your card at any time by emailing us and we will delete it.</p>
+      <h3>Money</h3>
+      <p>The gym is free while it is in early training. If paid plans arrive later, we will say so clearly before anyone is charged. Nothing will ever be charged quietly.</p>
+      <h3>Our material</h3>
+      <p>The audio, the phrases, the artwork and the games belong to Elastic Harmony LLC. They are here for your personal learning. Please do not copy, republish or resell them.</p>
+      <h3>The limits</h3>
+      <p>We provide the gym as it is. To the extent the law allows, our total liability to you is capped at what you have paid us for the service. Right now that is zero.</p>
+      <h3>Bad behavior</h3>
+      <p>We can close a card that abuses the gym, the material or other members. We will only do that for good reason.</p>
+      <h3>Changes</h3>
+      <p>If these terms change in a way that matters, we will post the update here and make it easy to notice. The date below always tells you the current version.</p>
+      <h3>The law</h3>
+      <p>These terms are governed by the laws of the State of New York, USA.</p>
+      <h3>Questions</h3>
+      <p>Write to us through <a class="textlink" href="#/contacto">the contact page</a>.</p>
+      <p class="lmeta">Last updated: July 19, 2026</p>
+    </div>
+  </section>
+</div>
+
+<!-- ============================================================
+     @ANCHOR:VIEW_PRIVACIDAD
+     ============================================================ -->
+<div class="view-privacidad">
+  <section class="legal">
+    <div class="wrap lwrap">
+      <a class="guide-back" href="#/"><svg viewBox="0 0 90 30" aria-hidden="true"><path d="M86 16 Q 50 6, 16 15" fill="none" stroke="#DB7F8E" stroke-width="5" stroke-linecap="round"/><path d="M24 6 L 12 15 L 27 21" fill="none" stroke="#DB7F8E" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Back to the gym</span></a>
+      <span class="label fg-kicker">Tu informaci&oacute;n</span>
+      <h2>Pol&iacute;tica de privacidad</h2>
+      <span class="sub">What we know about you, and what we do with it.</span>
+      <h3>What we collect</h3>
+      <p>Your email address, the display name you choose, and your training progress. Reps, streaks, minutes, level. That is the whole list.</p>
+      <h3>Why we collect it</h3>
+      <p>The email and password make your gym card work. The progress numbers exist so your training does not vanish between visits. We do not sell your information and we do not show ads.</p>
+      <h3>Where it lives</h3>
+      <p>Accounts and progress are stored with Supabase. The site is served by Vercel and the audio by jsDelivr. Each of them processes data only to run their part of the service.</p>
+      <h3>Email</h3>
+      <p>You get one confirmation email when you join. After that, silencio. No newsletters, no streak guilt trips, no marketing.</p>
+      <h3>Cookies and storage</h3>
+      <p>We use browser storage to keep you signed in and to remember your scores. No ad cookies, no trackers, no analytics scripts watching you train.</p>
+      <h3>Your choices</h3>
+      <p>You can ask to see, correct or delete your information at any time. Email us and we will handle it. Closing your card removes your data.</p>
+      <h3>How long we keep it</h3>
+      <p>As long as your card is active. Close your card and we delete what we hold, apart from anything the law requires us to keep.</p>
+      <h3>Kids</h3>
+      <p>The gym is for people 13 and older. If we learn we hold information about a younger child without a parent's consent, we will delete it.</p>
+      <h3>Changes</h3>
+      <p>If this policy changes, the update appears here with a fresh date below.</p>
+      <h3>Questions</h3>
+      <p>Write to us through <a class="textlink" href="#/contacto">the contact page</a>.</p>
+      <p class="lmeta">Last updated: July 19, 2026</p>
+    </div>
+  </section>
+</div>
+
+<!-- ============================================================
      @ANCHOR:VIEW_AUTH
      ============================================================ -->
 <div class="view-auth">
@@ -1696,6 +1895,9 @@ body[data-view="tenses"] .view-tenses { display: block; }
   </g>
 </svg>
     <span>Hecho a oído · © 2026 Elastic Harmony LLC</span>
+    <nav class="footer-legal" aria-label="Legal">
+      <a href="#/terminos">Términos</a><span class="dot" aria-hidden="true">·</span><a href="#/privacidad">Privacidad</a><span class="dot" aria-hidden="true">·</span><a href="#/contacto">Contacto</a>
+    </nav>
   </div>
 </section>
 
@@ -2313,6 +2515,19 @@ function route() {
   } else if (h === "#/guias/tiempos") {
     document.body.dataset.view = "tenses";
     window.scrollTo(0, 0);
+  } else if (h === "#/cuenta") {
+    document.body.dataset.view = "cuenta";
+    loadCuenta();
+    window.scrollTo(0, 0);
+  } else if (h === "#/contacto") {
+    document.body.dataset.view = "contacto";
+    window.scrollTo(0, 0);
+  } else if (h === "#/terminos") {
+    document.body.dataset.view = "terminos";
+    window.scrollTo(0, 0);
+  } else if (h === "#/privacidad") {
+    document.body.dataset.view = "privacidad";
+    window.scrollTo(0, 0);
   } else if (h === "#/" || h === "") {
     document.body.dataset.view = "home";
   }
@@ -2505,6 +2720,61 @@ async function initAuth() {
   });
 }
 initAuth();
+
+/* ============================================================
+   @ANCHOR:CUENTA
+   Account page + menu sign-out.
+   ============================================================ */
+async function loadCuenta() {
+  await Promise.resolve(); /* let the auth wiring above finish on first paint */
+  const form = document.getElementById("cuentaForm");
+  const out = document.getElementById("cuentaOut");
+  const note = document.getElementById("cuentaNote");
+  note.textContent = "";
+  note.classList.remove("err");
+  if (!supa) { form.hidden = true; out.hidden = false; return; }
+  const got = await supa.auth.getSession();
+  const s = (got && got.data && got.data.session) || null;
+  if (!s) { form.hidden = true; out.hidden = false; return; }
+  document.getElementById("cEmail").value = s.user.email || "";
+  const dn = s.user.user_metadata && s.user.user_metadata.display_name;
+  document.getElementById("cName").value = dn || "";
+  out.hidden = true;
+  form.hidden = false;
+}
+
+document.getElementById("cuentaForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!supa) return;
+  const saveBtn = document.getElementById("cuentaSave");
+  const note = document.getElementById("cuentaNote");
+  const name = document.getElementById("cName").value.trim();
+  note.textContent = "";
+  note.classList.remove("err");
+  saveBtn.disabled = true;
+  const prevLabel = saveBtn.textContent;
+  saveBtn.textContent = "Un momento";
+  try {
+    const res = await supa.auth.updateUser({ data: { display_name: name || null } });
+    if (res.error) throw res.error;
+    if (res.data && res.data.user && session) session.user = res.data.user;
+    applySessionUI();
+    toast("Saved. Your card is up to date.");
+  } catch (err) {
+    note.textContent = friendlyAuthError(err);
+    note.classList.add("err");
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = prevLabel;
+  }
+});
+
+document.getElementById("cuentaSalir").addEventListener("click", (e) => {
+  e.preventDefault(); doSignOut();
+});
+document.getElementById("menuSalir").addEventListener("click", (e) => {
+  e.preventDefault(); doSignOut();
+});
 
 /* ============================================================
    TOAST
