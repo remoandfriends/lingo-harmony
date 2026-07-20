@@ -567,13 +567,13 @@ const FD = {
     st.resolved=true; st.running=false; clearInterval(st.iv);
     this.stopAudio();
     const good = choice === it.chunk;
-    /* reveal the blank */
+    /* reveal the blank only when the ear earned it */
     const bl=$('blank');
-    if(bl){ bl.classList.add('revealed'); bl.innerHTML=esc(it.chunk); }
-    /* paint choices */
+    if(bl && good){ bl.classList.add('revealed'); bl.innerHTML=esc(it.chunk); }
+    /* paint choices: on a miss the correct one stays camouflaged */
     [...$('choices').children].forEach(b=>{
       b.disabled=true;
-      if(b.textContent===it.chunk) b.classList.add('right');
+      if(good && b.textContent===it.chunk) b.classList.add('right');
       else if(btn===b) b.classList.add('wrong');
       else b.classList.add('dim');
     });
@@ -586,16 +586,16 @@ const FD = {
       v.className='verdict show good';
       $('vStamp').textContent='\u2713 ' + it.chunk + '  \u00b7  +' + gain;
       $('vEn').textContent=it.en;
-      $('vNote').textContent='';
+      $('vNote').innerHTML='<b>Ear note:</b> ' + esc(it.note);
       $('btnNext').classList.add('show');
     } else {
       st.streak=0;
       st.misses.push(it);
       Fx.wrong();
       v.className='verdict show bad';
-      $('vStamp').textContent = choice===null ? '\u23F1 Time. It was: ' + it.chunk : '\u2717 It was: ' + it.chunk;
-      $('vEn').textContent=it.en;
-      $('vNote').innerHTML='<b>Ear note:</b> ' + esc(it.note);
+      $('vStamp').textContent = choice===null ? '\u23F1 Time.' : '\u2717 Not that one.';
+      $('vEn').textContent='You will hear it again at the end of the drill.';
+      $('vNote').textContent='';
       $('btnNext').classList.add('show');
     }
   },
@@ -622,8 +622,9 @@ const FD = {
       st.misses.forEach(it=>{
         const d=document.createElement('div'); d.className='rev';
         const low=it.es.toLowerCase(); const at=low.indexOf(it.chunk.toLowerCase());
-        d.innerHTML='<div class="es">'+esc(it.es.slice(0,at))+'<b>'+esc(it.chunk)+'</b>'+esc(it.es.slice(at+it.chunk.length))+'</div>'
-          +'<div class="nt">'+esc(it.en)+' \u00b7 '+esc(it.note)+'</div>';
+        d.innerHTML='<div class="es">'+esc(it.es.slice(0,at))
+          +'<span style="display:inline-block;min-width:64px;border-bottom:var(--line) solid var(--mango);transform:translateY(-2px)">&nbsp;</span>'
+          +esc(it.es.slice(at+it.chunk.length))+'</div>';
         const rp=document.createElement('button'); rp.className='rp'; rp.textContent='\u25B6 hear it again';
         rp.onclick=()=>{ Fx.ensure(); const a=new Audio(AUDIO_BASE+'fd-'+slugId(it.t)+'-'+it.v+'.mp3');
           a.onerror=()=>{ try{ const u=new SpeechSynthesisUtterance(it.es); u.lang='es-ES'; speechSynthesis.cancel(); speechSynthesis.speak(u); }catch(e){} };
@@ -979,11 +980,9 @@ const OA = {
     this.stopAudio();
     $('oBank').classList.add('dead');
     const words = it.en.split(' ');
+    /* unfilled slots stay blank: the answer is never handed over */
     for(let k=st.filled; k<words.length; k++){
-      const slot=$('oSlots').children[k];
-      slot.classList.remove('active');
-      const sw=slot.querySelector('.sword');
-      sw.textContent=words[k]; sw.classList.add('missed');
+      $('oSlots').children[k].classList.remove('active');
     }
     const v=$('oVerdict');
     if(win){
@@ -999,8 +998,8 @@ const OA = {
       st.misses.push(it);
       Fx.wrong();
       v.className='verdict show bad';
-      $('oVStamp').textContent='\u23F1 Time. It opens: ' + it.en + '...';
-      $('oVEn').textContent=it.es + '...';
+      $('oVStamp').textContent='\u23F1 Time.';
+      $('oVEn').textContent='You will hear it again at the end of the alarm.';
     }
     $('btnONext').classList.add('show');
   },
@@ -1026,8 +1025,7 @@ const OA = {
       h.textContent='The ones that got away'; rv.appendChild(h);
       st.misses.forEach(it=>{
         const d=document.createElement('div'); d.className='rev';
-        d.innerHTML='<div class="es">'+esc(it.es)+'...</div>'
-          +'<div class="nt">'+esc(it.en)+'...</div>';
+        d.innerHTML='<div class="es">Opener '+(this.alarmItems(st.n).indexOf(it)+1)+' of '+OPENERS_PER_ALARM+'</div>';
         const rp=document.createElement('button'); rp.className='rp'; rp.textContent='\u25B6 hear it again';
         rp.onclick=()=>{ Fx.ensure(); const a=new Audio(openerSrc(it));
           a.onerror=()=>{ try{ const u=new SpeechSynthesisUtterance(it.es); u.lang='es-ES'; speechSynthesis.cancel(); speechSynthesis.speak(u); }catch(e){} };
