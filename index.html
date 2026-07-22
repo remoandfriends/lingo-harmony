@@ -425,6 +425,8 @@ a.plaque:hover { transform: translateY(-6px) rotate(0deg) !important; box-shadow
 
 .plaque-azul { background: var(--azul); color: var(--cream); border-color: var(--azul-deep); transform: rotate(-0.7deg); }
 .plaque-azul .label { color: var(--rosa); }
+.plaque-verde { background: #5C7A44; color: var(--cream); border-color: #33502F; transform: rotate(0.6deg); }
+.plaque-verde .label { color: #F0CDAC; }
 .plaque-azul .live { color: var(--cream); }
 a.plaque-azul:hover { box-shadow: 5px 6px 0 0 var(--azul-deep); }
 .plaque-rosa { background: var(--rosa); color: var(--ink); border-color: var(--rosa-deep); transform: rotate(0.8deg) translateY(20px); }
@@ -1022,7 +1024,7 @@ body[data-view="privacidad"] .view-privacidad { display: block; }
   .rep-stage { grid-template-columns: 1fr; justify-items: center; text-align: center; }
   .rep-zone { text-align: left; width: 100%; }
   .station-row { grid-template-columns: 1fr; }
-  .plaque-azul, .plaque-rosa, .plaque-soon { transform: none; }
+  .plaque-azul, .plaque-verde, .plaque-rosa, .plaque-soon { transform: none; }
   .close-grid { grid-template-columns: 1fr; }
   .close-mascot { order: -1; }
   .floor-grid { grid-template-columns: 1fr; }
@@ -1127,7 +1129,7 @@ body[data-view="privacidad"] .view-privacidad { display: block; }
         <a class="gm-item" href="#/floor">El piso</a>
         <a class="gm-item" href="./transcription-challenge.html">Transcription Challenge</a>
         <a class="gm-item" href="./ear-maze.html">Ear Maze</a>
-        <span class="gm-item gm-soon">Como Se Dice <span class="gm-tag">En construcción</span></span>
+        <a class="gm-item" href="./todo-recto.html">Todo Recto</a>
         <div class="gm-sep" aria-hidden="true"></div>
         <span class="label gm-label">Guías de referencia</span>
         <a class="gm-item" href="#/guias/misheard">Mishearing Field Guide</a>
@@ -1988,13 +1990,13 @@ const LH_CONFIG = {
       color: "rosa"
     },
     {
-      key: "realms",
-      tag: "Los reinos",
-      name: "Como Se Dice",
-      desc: "Story worlds where your ear does the exploring: gardens, ghosts, signals and songs.",
-      href: null,
-      live: false,
-      color: "soon"
+      key: "todorecto",
+      tag: "Estación · El reparto",
+      name: "Todo Recto",
+      desc: "Hear the dispatch in Spanish, work out the destination, and drive the courier van there turn by turn.",
+      href: "./todo-recto.html",
+      live: true,
+      color: "verde"
     }
   ],
   supabase: {
@@ -2055,7 +2057,7 @@ function marqueeFor(key, name) {
       '<span class="mq-sub">Spanish listening</span></span></div>';
   }
   return '<div class="marq">' + bloom +
-    '<span class="mq-txt"><span class="mq-name">Como Se <span class="mq-accent">Dice</span></span>' +
+    '<span class="mq-txt"><span class="mq-name">Todo <span class="mq-accent">Recto</span></span>' +
     '<span class="mq-sub">Spanish listening</span></span></div>';
 }
 function renderStations(mountId) {
@@ -2070,7 +2072,7 @@ function renderStations(mountId) {
         '<p>' + st.desc + '</p>' +
         '<span class="go" style="opacity:.6">Opening soon</span></div>';
     }
-    const cls = st.color === "azul" ? "plaque-azul" : "plaque-rosa";
+    const cls = st.color === "azul" ? "plaque-azul" : st.color === "verde" ? "plaque-verde" : "plaque-rosa";
     return '<a class="plaque ' + cls + '" href="' + st.href + '" aria-label="' + st.name + '">' +
       marqueeFor(st.key, st.name) +
       '<div class="toprow"><span class="label">' + st.tag + '</span>' +
