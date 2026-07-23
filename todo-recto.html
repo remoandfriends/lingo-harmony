@@ -374,6 +374,46 @@ button{font-family:var(--body);cursor:pointer}
   *,*::before,*::after{animation-duration:.001s !important;transition-duration:.001s !important}
 }
 
+/* ---- delivery actions ---- */
+.action-row{flex:0 0 auto;display:flex;gap:10px;justify-content:flex-end;align-items:center;padding:8px 14px 0}
+.act-btn{appearance:none;border:var(--line) solid var(--ink);border-radius:999px;padding:8px 18px;
+  font-family:var(--body);font-weight:800;font-size:14.5px;cursor:pointer;
+  box-shadow:2px 3px 0 0 var(--navy);transition:transform .12s ease, box-shadow .12s ease}
+.act-btn:active{transform:translateY(2px);box-shadow:0 1px 0 0 var(--navy)}
+.act-btn.stop{background:var(--mango);color:var(--ink)}
+.act-btn.reach{background:var(--rosa);color:#fff}
+.act-btn.reach.confirm{background:var(--azul);color:var(--cream)}
+#pulse.hold{opacity:1;animation:holdGlow 1.15s ease-in-out infinite}
+@keyframes holdGlow{
+  0%,100%{box-shadow:0 0 0 6px rgba(55,88,201,.38)}
+  50%{box-shadow:0 0 0 18px rgba(55,88,201,.12)}}
+#timer.frozen{background:var(--azul);animation:frostPulse 1.6s ease-in-out infinite}
+@keyframes frostPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.25)}}
+.h3gloss{font-family:var(--body);font-weight:600;font-size:11px;letter-spacing:.02em;
+  text-transform:none;color:var(--ink-soft);margin-left:2px}
+.vocab-toggle.locked{opacity:.55}
+.linklike{appearance:none;border:none;background:none;padding:0;font:inherit;color:inherit;
+  text-decoration:underline;cursor:pointer}
+
+/* ---- tutorial ---- */
+#tut{position:fixed;inset:0;z-index:70;pointer-events:none}
+#tut.hidden{display:none}
+.tut-scrim{position:absolute;inset:0;background:rgba(20,29,72,.55);display:none}
+.tut-ring{position:fixed;z-index:71;border:3px solid var(--azul);border-radius:14px;
+  box-shadow:0 0 0 9999px rgba(20,29,72,.5), 0 0 0 6px rgba(55,88,201,.35);
+  transition:all .3s ease;pointer-events:none;display:none}
+.tut-card{position:fixed;z-index:72;background:var(--cream);border:var(--line) solid var(--ink);
+  border-radius:14px;box-shadow:4px 5px 0 0 var(--navy);padding:14px 16px;pointer-events:auto}
+.tut-card p{margin:0 0 12px;font-size:14.5px;line-height:1.45;font-weight:600;color:var(--ink)}
+.tut-row{display:flex;justify-content:space-between;gap:10px}
+.tut-card.center{left:50%!important;top:50%!important;bottom:auto!important;
+  transform:translate(-50%,-50%);text-align:center;max-width:340px!important}
+@media (max-width: 880px){
+  .action-row{padding:6px 10px 0}
+  .act-btn{padding:7px 13px;font-size:13px}
+  .tut-card{max-width:calc(100vw - 24px)!important}
+}
+
 </style>
 </head>
 <body>
@@ -525,7 +565,7 @@ button{font-family:var(--body);cursor:pointer}
     <p class="intro-tag">You are the village courier. Listen to the dispatch in Spanish, work out the destination, and drive the Meadow Post van there using real direction words.</p>
   </div>
   <div class="worlds" id="worldRow"></div>
-  <p class="intro-foot">Best with sound on. Replaying audio costs 10 s. Wrong door costs 25 s.</p>
+  <p class="intro-foot">Best with sound on. Replaying audio costs 10 s. A wrong delivery costs 20 s. <button class="linklike" id="tutLink">Replay the tutorial</button></p>
 </section>
 
 <!-- ============================================================
@@ -657,6 +697,10 @@ button{font-family:var(--body);cursor:pointer}
         <div class="map-tip" id="mapTip" role="status"></div>
       </div>
     </div>
+    <div class="action-row">
+      <button class="act-btn stop" id="stopBtn">Stop</button>
+      <button class="act-btn reach" id="reachBtn">Reached destination</button>
+    </div>
     <div class="bank-bar"><div class="bank" id="bank" role="group" aria-label="Frases de direccion"></div></div>
     </div>
 
@@ -665,28 +709,27 @@ button{font-family:var(--body);cursor:pointer}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
       <div class="card">
-        <h3>La entrega <span id="provChipWrap"></span></h3>
+        <h3>La entrega <span class="h3gloss">(The delivery)</span></h3>
         <div class="objective-state" id="objectiveState">
-          <div class="listening"><span class="eq"><i></i><i></i><i></i><i></i></span> Escucha la pista...</div>
+          <div class="listening"><span class="eq"><i></i><i></i><i></i><i></i></span> Listening to the delivery clue...</div>
         </div>
         <div class="riddle-text hidden" id="riddleText"></div>
         <div class="dest-name hidden" id="destName"></div>
         <div class="meta-row">
-          <div class="meta-pill"><b id="movesLeft">0</b><span>Indicaciones</span></div>
-          <div class="meta-pill"><b id="deliveredCount">0/7</b><span>Entregas</span></div>
+          <div class="meta-pill"><b id="movesLeft">0</b><span>Moves left</span></div>
+          <div class="meta-pill"><b id="deliveredCount">0/7</b><span>Deliveries</span></div>
         </div>
       </div>
       <div class="card">
-        <h3>Pistas</h3>
+        <h3>Pistas <span class="h3gloss">(Hints)</span></h3>
         <div class="hints">
-          <button class="hint-btn" id="hint1"><span>Ver el texto de la pista</span><span class="cost">-10 s</span></button>
-          <button class="hint-btn" id="hint2"><span>Nombre del destino</span><span class="cost">-20 s</span></button>
-          <button class="hint-btn" id="hint3"><span>Se&ntilde;alar en el mapa</span><span class="cost">-30 s</span></button>
-          <button class="hint-btn" id="hint4"><span>Cincuenta y cincuenta</span><span class="cost">-30 s</span></button>
+          <button class="hint-btn" id="hint1"><span>Unlock vocabulary list</span><span class="cost">-10 s</span></button>
+          <button class="hint-btn" id="hint2"><span>Destination name</span><span class="cost">-20 s</span></button>
+          <button class="hint-btn" id="hint3"><span>Freeze clock</span><span class="cost">25 s</span></button>
         </div>
       </div>
       <div class="card">
-        <h3>Ruta del d&iacute;a</h3>
+        <h3>Ruta del d&iacute;a <span class="h3gloss">(Today's route)</span></h3>
         <div class="stamps" id="stampRow"></div>
       </div>
       <div class="card">
@@ -715,6 +758,19 @@ button{font-family:var(--body);cursor:pointer}
   <button class="skip-btn" id="cinSkip">Omitir</button>
 </div>
 
+<!-- interactive tutorial -->
+<div id="tut" class="hidden">
+  <div class="tut-scrim" id="tutScrim"></div>
+  <div class="tut-ring" id="tutRing"></div>
+  <div class="tut-card" id="tutCard">
+    <p id="tutText"></p>
+    <div class="tut-row">
+      <button class="btn ghost" id="tutSkip">Skip</button>
+      <button class="btn primary" id="tutNext">Next</button>
+    </div>
+  </div>
+</div>
+
 <!-- generic modal -->
 <div class="overlay hidden" id="modalWrap" role="dialog" aria-modal="true">
   <div class="modal" id="modalBox"></div>
@@ -735,8 +791,8 @@ var CONFIG = {
   audioBase: "https://cdn.jsdelivr.net/gh/remoandfriends/spanish-trainer-audio@main/todo-recto/music/",
   stormVideo: null,            /* @ANCHOR:STORM_VIDEO set to an mp4 URL to replace the built-in cinematic */
   replayCost: 10,
-  wrongDoorCost: 25,
-  hintCosts: [10, 20, 30, 30],
+  wrongDoorCost: 20,
+  hintCosts: [10, 20, 0],
   budgetSlack: 4,
   saveKey: "lh_todorecto_v1",
   prefKey: "lh_todorecto_prefs"
@@ -948,17 +1004,18 @@ function advance(G,node,link){
   var samples=edgeSamples(G,link.edge,link.dir).slice();
   var cur=link.to;
   var lastEdge=link.edge;
+  var chain=[{node:cur, idx:samples.length-1, heading:arrivalHeading(samples)}];
   var guard=0;
   while(guard++<40){
-    if(G.isStop(cur)) break;
     var others=G.adj[cur].filter(function(l){return l.edge!==lastEdge && !G.edges[l.edge].closed;});
     if(G.deg(cur)!==2 || others.length!==1) break;
     if(G.edges[others[0].edge].bridge) break;   /* bridges always ask for the command */
     var nxt=others[0];
     samples=samples.concat(edgeSamples(G,nxt.edge,nxt.dir).slice(1));
     lastEdge=nxt.edge; cur=nxt.to;
+    chain.push({node:cur, idx:samples.length-1, heading:arrivalHeading(samples)});
   }
-  return {node:cur, samples:samples, heading:arrivalHeading(samples)};
+  return {node:cur, samples:samples, heading:arrivalHeading(samples), chain:chain};
 }
 
 /* Moves available from a node with a heading. Returns map:
@@ -981,20 +1038,29 @@ function availableMoves(G,node,heading){
 
 /* BFS in command space for the fair-move budget */
 function shortestCommands(G,startNode,startHeading,dest){
+  if(startNode===dest) return 0;
   var q=[{node:startNode,heading:startHeading,d:0}];
   var seen={};
+  var hit=false;
   while(q.length){
     var cur=q.shift();
-    if(cur.node===dest) return cur.d;
     var hb=Math.round(((cur.heading%360)+360)%360/30);
     var key=cur.node+"|"+hb;
     if(seen[key]) continue;
     seen[key]=1;
-    G.adj[cur.node].forEach(function(link){
-      if(G.edges[link.edge].closed) return;
+    var links=G.adj[cur.node];
+    for(var i=0;i<links.length;i++){
+      var link=links[i];
+      if(G.edges[link.edge].closed) continue;
       var out=advance(G,cur.node,link);
+      hit = out.node===dest;
+      for(var c=0;c<out.chain.length && !hit;c++){ if(out.chain[c].node===dest) hit=true; }
+      if(hit) return cur.d+1;
       q.push({node:out.node,heading:out.heading,d:cur.d+1});
-    });
+      out.chain.forEach(function(ch){
+        if(G.isStop(ch.node) && ch.node!==out.node) q.push({node:ch.node,heading:ch.heading,d:cur.d+1});
+      });
+    }
   }
   return 8;
 }
@@ -1116,7 +1182,7 @@ var Voice=(function(){
   }
   function speakFallback(text,onEnd){
     usingTTS=true;
-    document.getElementById("provChipWrap").innerHTML='<span class="prov-chip">voz provisional</span>';
+    
     if(!window.speechSynthesis){ setTimeout(onEnd,2400); return; }
     var u=new SpeechSynthesisUtterance(text);
     u.lang="es-ES"; u.rate=0.96;
@@ -1127,28 +1193,41 @@ var Voice=(function(){
     setTimeout(fin, 14000);
     speechSynthesis.speak(u);
   }
+  var cacheEls={};
+  function getEl(file){
+    var a=cacheEls[file];
+    if(!a){
+      a=new Audio();
+      a.preload="auto"; a.crossOrigin="anonymous";
+      a.src=CONFIG.audioBase+file+".mp3";
+      cacheEls[file]=a;
+    }
+    return a;
+  }
+  function preload(file){ getEl(file); }
   function play(file,text,onEnd){
     stop();
     Music.duck(true);
     var done=function(){ Music.duck(false); onEnd&&onEnd(); };
     if(Snd.isMuted()){ setTimeout(function(){done();},600); return; }
-    var a=new Audio();
-    a.preload="auto"; a.crossOrigin="anonymous";
-    a.src=CONFIG.audioBase+file+".mp3";
+    var a=getEl(file);
+    a.playbackRate=1;
     var settled=false;
     a.onended=function(){ if(!settled){settled=true; done();} };
     a.onerror=function(){ if(!settled){settled=true; speakFallback(text,done);} };
-    a.play().then(function(){ current=a; }).catch(function(){
-      if(!settled){settled=true; speakFallback(text,done);}
-    });
+    try{ a.currentTime=0; }catch(e){}
+    current=a;
+    var p=a.play();
+    if(p&&p.catch) p.catch(function(){ if(!settled){settled=true; speakFallback(text,done);} });
   }
-  return {play:play, stop:stop, usedTTS:function(){return usingTTS;}};
+  return {play:play, stop:stop, preload:preload, usedTTS:function(){return usingTTS;}};
 })();
 
 /* ============================================================
    @ANCHOR:STATE + PERSISTENCE
    ============================================================ */
 var DEBUG=/[?&]debug=1/.test(location.search);
+function tutNotify(ev){ if(window.TUT && TUT.active && TUT.notify) TUT.notify(ev); }
 var G=buildGraph(HM);
 var S=null; /* live mission state */
 
@@ -1156,7 +1235,8 @@ function freshState(){
   return {
     level:0, node:HM.start.node, heading:HM.start.heading,
     carry:0, stormDone:false, stamps:[false,false,false,false,false,false,false],
-    phase:"idle", timeLeft:0, moves:0, hintsUsed:[false,false,false,false],
+    phase:"idle", timeLeft:0, moves:0, hintsUsed:[false,false,false],
+    vocabUnlocked:false, frozen:false, movesTotal:0,
     firstPlayDone:false, levelStart:null, anim:false
   };
 }
@@ -1316,15 +1396,16 @@ function renderIntro(){
 
 function renderStamps(){
   var row=$("stampRow"); row.innerHTML="";
-  HM.levels.forEach(function(lv,i){
+  var total=S?S.movesTotal:0, used=S?Math.max(0,S.movesTotal-S.movesLeft):0;
+  for(var i=0;i<total;i++){
     var s=document.createElement("div");
-    s.className="stamp"+(S&&S.stamps[i]?" done":"");
-    s.title=HM.buildings[lv.dest].en;
-    s.innerHTML=S&&S.stamps[i]
+    s.className="stamp"+(i<used?" done":"");
+    s.title="Command "+(i+1);
+    s.innerHTML=i<used
       ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>'
       : "<span>"+(i+1)+"</span>";
     row.appendChild(s);
-  });
+  }
   $("deliveredCount").textContent=S?S.stamps.filter(Boolean).length+"/7":"0/7";
 }
 
@@ -1340,6 +1421,7 @@ function renderVocab(){
 
 function refreshCommands(){
   if(S) $("movesLeft").textContent=S.movesLeft;
+  renderStamps();
 }
 
 /* ============================================================
@@ -1361,13 +1443,23 @@ function orientVan(theta,dt){
   else courierSvg.style.transform="rotate("+shortArc(vanAngle-180).toFixed(2)+"deg) scaleX(-1)";
 }
 
-function driveAlong(samples,done){
+var stopReq=null; /* null | {any:true} | {node:id, silent:bool} */
+function requestStop(target){
+  if(!(S && S.anim)) return false;
+  stopReq = target || {any:true};
+  return true;
+}
+function driveAlong(out,done){
+  var samples=out.samples;
   var lens=[0];
   for(var i=1;i<samples.length;i++){ lens.push(lens[i-1]+vdist(samples[i-1],samples[i])); }
   var total=lens[lens.length-1];
+  var stopsAhead=(out.chain||[]).filter(function(c){return G.isStop(c.node);})
+      .map(function(c){return {node:c.node, e:lens[Math.min(c.idx,lens.length-1)], heading:c.heading};});
+  var finalNode=out.node, finalHeading=out.heading;
   var SPEED=10.5;
   var dur=Math.max(0.6,total/SPEED);
-  var t0=null, lastE=0, bobPhase=0, lastTs=null;
+  var t0=null, lastE=0, bobPhase=0, lastTs=null, truncE=null;
   S.anim=true; refreshCommands();
   function ease(t){ return t<0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2; }
   function pointAt(e){
@@ -1380,7 +1472,21 @@ function driveAlong(samples,done){
   function step(ts){
     if(!t0)t0=ts;
     var t=Math.min(1,(ts-t0)/(dur*1000));
-    var e=ease(t)*total;
+    var e = truncE==null ? ease(t)*total : Math.min(truncE, lastE + SPEED*((ts-lastTs)/1000||0.016));
+    if(stopReq && truncE==null){
+      var pick=null;
+      for(var i2=0;i2<stopsAhead.length;i2++){
+        var s=stopsAhead[i2];
+        if(s.e>e+0.4){
+          if(stopReq.node){ if(s.node===stopReq.node){ pick=s; break; } }
+          else { pick=s; break; }
+        }
+      }
+      var silent=!!stopReq.silent;
+      stopReq=null;
+      if(pick){ truncE=pick.e; finalNode=pick.node; finalHeading=pick.heading; }
+      else if(!silent){ toast("No hay ninguna parada m\u00e1s adelante."); }
+    }
     var p=pointAt(e);
     var ahead=pointAt(Math.min(total,e+1.1));
     var dxv=(ahead.x-p.x)*ASPECT, dyv=(ahead.y-p.y);
@@ -1390,8 +1496,14 @@ function driveAlong(samples,done){
     var bob=Math.sin(bobPhase)*0.55;
     courier.style.transform="translate(-50%,-56%) translateY("+bob+"px)";
     setCourier(p.x,p.y);
-    if(t<1){ requestAnimationFrame(step); }
-    else { S.anim=false; done&&done(); }
+    var finished = truncE==null ? t>=1 : e>=truncE-0.02;
+    if(!finished){ requestAnimationFrame(step); }
+    else {
+      var endP=pointAt(truncE==null?total:truncE);
+      setCourier(endP.x,endP.y);
+      S.anim=false;
+      done&&done({node:finalNode,heading:finalHeading});
+    }
   }
   requestAnimationFrame(step);
 }
@@ -1425,7 +1537,7 @@ document.addEventListener("pointerdown",function(){ if(skipCb){ skipCb(); } });
 var timerRaf=null,lastTs=null;
 function timerLoop(ts){
   if(S.phase==="navigate"){
-    if(lastTs!=null){ S.timeLeft-=(ts-lastTs)/1000; }
+    if(lastTs!=null && !S.frozen){ S.timeLeft-=(ts-lastTs)/1000; }
     if(S.timeLeft<=0){ S.timeLeft=0; updateTimer(); failLevel("time"); return; }
   }
   lastTs=ts; updateTimer();
@@ -1448,6 +1560,23 @@ function chargeTime(sec,label){
    ============================================================ */
 function startMission(save){
   Music.play("game");
+  if(!TUT.seen()){ runTutorialThen(function(){ startMissionReal(save); }); return; }
+  startMissionReal(save);
+}
+function runTutorialThen(after){
+  S=freshState();
+  S.phase="navigate"; S.timeLeft=180; S.movesLeft=8; S.movesTotal=8; S.firstPlayDone=true;
+  $("intro").classList.add("hidden");
+  $("game").classList.remove("hidden");
+  fitStage(); resetVan();
+  setCourier(G.nodes[S.node].x,G.nodes[S.node].y);
+  applyStormState(false,true);
+  refreshCommands(); refreshVocabLock(); updateTimer();
+  $("replayBtn").disabled=false;
+  ["hint1","hint2","hint3"].forEach(function(id){ $(id).disabled=true; });
+  TUT.start(after);
+}
+function startMissionReal(save){
   S=freshState();
   if(save){
     S.level=save.level; S.node=save.node; S.heading=save.heading;
@@ -1470,18 +1599,22 @@ function startLevel(i){
   var lv=HM.levels[i];
   S.level=i;
   S.phase="listening";
-  S.hintsUsed=[false,false,false,false];
+  S.hintsUsed=[false,false,false];
+  S.vocabUnlocked=false; endFreeze(); refreshVocabLock(); disarmReached();
   S.firstPlayDone=false;
   S.levelStart={node:S.node,heading:S.heading};
   S.timeLeft=lv.time + S.carry;
   S.carry=0;
   var short=shortestCommands(G,S.node,S.heading,lv.dest);
   S.movesLeft=short+CONFIG.budgetSlack;
+  S.movesTotal=S.movesLeft;
+  Voice.preload(lv.audio);
+  if(HM.levels[i+1]) Voice.preload(HM.levels[i+1].audio);
   $("levelChip").textContent="Entrega "+(i+1)+" de 7";
   $("riddleText").classList.add("hidden");
   $("destName").classList.add("hidden");
-  $("objectiveState").innerHTML='<div class="listening"><span class="eq"><i></i><i></i><i></i><i></i></span> Escucha la pista...</div>';
-  ["hint1","hint2","hint3","hint4"].forEach(function(id,k){ $(id).disabled=true; });
+  $("objectiveState").innerHTML='<div class="listening"><span class="eq"><i></i><i></i><i></i><i></i></span> Listening to the delivery clue...</div>';
+  ["hint1","hint2","hint3"].forEach(function(id,k){ $(id).disabled=true; });
   $("replayBtn").disabled=true;
   clearDims();
   updateTimer(); refreshCommands(); renderStamps(); saveProgress();
@@ -1493,9 +1626,9 @@ function onRiddleDone(){
   S.phase="navigate";
   S.firstPlayDone=true;
   lastTs=null;
-  $("objectiveState").innerHTML='<div style="font-weight:700">Encuentra el destino y conduce.</div>';
+  $("objectiveState").innerHTML='<div style="font-weight:700">Find the destination and drive there.</div>';
   $("replayBtn").disabled=false;
-  ["hint1","hint2","hint3","hint4"].forEach(function(id,k){ $(id).disabled=S.hintsUsed[k]; });
+  ["hint1","hint2","hint3"].forEach(function(id,k){ $(id).disabled=S.hintsUsed[k]; });
   refreshCommands();
 }
 
@@ -1503,11 +1636,13 @@ function executeMove(m){
   if(S.movesLeft<=0){ failLevel("moves"); return; }
   S.movesLeft--;
   clearDims();
+  disarmReached();
   Snd.move();
+  tutNotify("move");
   var out=advance(G,S.node,m.link);
-  S.node=out.node; S.heading=out.heading;
   refreshCommands();
-  driveAlong(out.samples,function(){
+  driveAlong(out,function(final){
+    S.node=final.node; S.heading=final.heading;
     refreshCommands();
     if(S.movesLeft<=0 && S.node!==HM.levels[S.level].dest){ failLevel("moves"); }
   });
@@ -1524,13 +1659,10 @@ function doPhrase(p,btn){
   if(btn&&btn.blur) btn.blur();
   if($("game").classList.contains("hidden")) return;
   if(S.phase==="listening"){ toast("Primero escucha la pista."); return; }
+  if(p.cmd==="stop"){ PhraseVoice.say(p.id,p.txt); uiStop(); return; }
   if(S.phase!=="navigate"||S.anim) return;
   PhraseVoice.say(p.id,p.txt);
-  if(p.cmd==="enter"){
-    if(!G.isStop(S.node)){ chipNo(btn); Snd.blocked(); toast("Aqu\u00ed no hay ninguna puerta."); return; }
-    doEnter(); return;
-  }
-  if(p.cmd==="stop"){ toast("La furgoneta ya est\u00e1 detenida."); return; }
+  if(p.cmd==="enter"){ uiReach(); return; }
   var moves=availableMoves(G,S.node,S.heading);
   var m=moves[p.cmd];
   if(!m){ chipNo(btn); Snd.blocked(); toast("Ah\u00ed no hay camino.","bad"); return; }
@@ -1538,20 +1670,60 @@ function doPhrase(p,btn){
   executeMove(m);
 }
 
-function doEnter(){
-  if(S.phase!=="navigate"||S.anim) return;
-  var b=HM.buildings[S.node];
-  if(!b) return;
-  var lv=HM.levels[S.level];
-  if(S.node===lv.dest){
-    S.phase="delivering";
-    refreshCommands();
-    Snd.good();
-    walkerDeliver(S.node,b,function(){ completeLevel(); });
-  } else {
+function deliverSuccess(){
+  var b=HM.buildings[HM.levels[S.level].dest];
+  S.phase="delivering";
+  refreshCommands();
+  Snd.good();
+  walkerDeliver(S.node,b,function(){ completeLevel(); });
+}
+var reachedArm=null;
+function nearestBuilding(){
+  var n=G.nodes[S.node];
+  var vx=n.x*ASPECT, vy=n.y;
+  var best=null,bd=1e9;
+  Object.keys(HM.buildings).forEach(function(id){
+    var d=HM.buildings[id].door;
+    var dx=d[0]*ASPECT-vx, dy=d[1]-vy, dist=dx*dx+dy*dy;
+    if(dist<bd){bd=dist;best=id;}
+  });
+  return best;
+}
+function armReached(){
+  if(!S||S.phase!=="navigate"||S.anim) return;
+  reachedArm=nearestBuilding();
+  var b=HM.buildings[reachedArm];
+  var p=$("pulse"); place(p,b.door[0],b.door[1]);
+  p.classList.remove("on"); p.classList.add("hold");
+  $("reachBtn").textContent="Confirm: "+b.es;
+  $("reachBtn").classList.add("confirm");
+  tutNotify("reach");
+}
+function disarmReached(){
+  if(!reachedArm) return;
+  reachedArm=null;
+  $("pulse").classList.remove("hold");
+  $("reachBtn").textContent="Reached destination";
+  $("reachBtn").classList.remove("confirm");
+}
+function confirmReached(){
+  if(window.TUT && TUT.active){ tutNotify("confirm"); disarmReached(); Snd.good(); toast("\u00a1Perfecto!"); return; }
+  var id=reachedArm;
+  disarmReached();
+  if(id===HM.levels[S.level].dest){ deliverSuccess(); }
+  else {
     Snd.bad();
-    chargeTime(CONFIG.wrongDoorCost,"Aqu\u00ed no es: "+b.es+".");
+    chargeTime(CONFIG.wrongDoorCost,"Aqu\u00ed no es: "+HM.buildings[id].es+".");
   }
+}
+function uiReach(){
+  if(!S||S.phase!=="navigate"||S.anim) return;
+  if(reachedArm) confirmReached(); else armReached();
+}
+function uiStop(){
+  if(window.TUT && TUT.active){ tutNotify("stop"); return; }
+  if(S&&S.anim){ requestStop(); }
+  else { toast("La furgoneta ya est\u00e1 detenida."); }
 }
 
 function completeLevel(){
@@ -1560,8 +1732,6 @@ function completeLevel(){
   S.carry=S.timeLeft;
   Snd.stamp();
   renderStamps();
-  var slot=$("stampRow").children[i];
-  if(slot){slot.classList.add("pop");}
   toast("Entrega completada: "+HM.buildings[HM.levels[i].dest].es,"good");
   saveProgress();
   var next=function(){
@@ -1576,6 +1746,7 @@ function completeLevel(){
 }
 
 function failLevel(reason){
+  endFreeze(); disarmReached();
   if(S.phase==="failed"||S.phase==="delivering") return;
   S.phase="failed";
   refreshCommands();
@@ -1705,27 +1876,41 @@ function useHint(k){
   if(S.phase!=="navigate"||S.hintsUsed[k]) return;
   S.hintsUsed[k]=true;
   $("hint"+(k+1)).disabled=true;
-  chargeTime(CONFIG.hintCosts[k],null);
-  toast("Pista "+(k+1)+"  (-"+CONFIG.hintCosts[k]+" s)");
   var lv=HM.levels[S.level];
   if(k===0){
-    var rt=$("riddleText"); rt.textContent='"'+lv.es+'"'; rt.classList.remove("hidden");
+    chargeTime(CONFIG.hintCosts[0],null);
+    toast("Vocabulary unlocked  (-"+CONFIG.hintCosts[0]+" s)");
+    S.vocabUnlocked=true;
+    refreshVocabLock();
   } else if(k===1){
-    var dn=$("destName"); dn.textContent="Destino: "+HM.buildings[lv.dest].es; dn.classList.remove("hidden");
-  } else if(k===2){
-    var d=HM.buildings[lv.dest].door;
-    var p=$("pulse"); place(p,d[0],d[1]);
-    p.classList.remove("on"); void p.offsetWidth; p.classList.add("on");
+    chargeTime(CONFIG.hintCosts[1],null);
+    var b=HM.buildings[lv.dest];
+    var d=$("destName");
+    d.textContent="Destino: "+b.es+" ("+b.en+")";
+    d.classList.remove("hidden");
+    toast("Destino: "+b.es+"  (-"+CONFIG.hintCosts[1]+" s)");
   } else {
-    var moves=availableMoves(G,S.node,S.heading);
-    var valid={};
-    Object.keys(moves).forEach(function(kk){ if(!moves[kk].blocked) valid[kk]=1; });
-    if(G.isStop(S.node)) valid.enter=1;
-    var chips=Array.prototype.slice.call($("bank").querySelectorAll(".chip"));
-    var invalid=chips.filter(function(c){ return !valid[c.dataset.cmd]; });
-    for(var i=invalid.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var tmp=invalid[i]; invalid[i]=invalid[j]; invalid[j]=tmp; }
-    invalid.slice(0, Math.min(Math.ceil(BANK.length/2), invalid.length)).forEach(function(c){ c.classList.add("dim"); });
+    startFreeze(25);
   }
+}
+var freezeT=null;
+function startFreeze(sec){
+  S.frozen=true;
+  $("timer").classList.add("frozen");
+  toast("Clock frozen for "+sec+" s");
+  clearTimeout(freezeT);
+  freezeT=setTimeout(endFreeze, sec*1000);
+}
+function endFreeze(){
+  clearTimeout(freezeT); freezeT=null;
+  if(S) S.frozen=false;
+  $("timer").classList.remove("frozen");
+}
+function refreshVocabLock(){
+  var b=$("vocabToggle");
+  var locked = S ? !S.vocabUnlocked : false;
+  b.classList.toggle("locked", locked);
+  b.textContent = locked ? "Vocabulary locked" : "Ver frases de direcci\u00f3n";
 }
 
 $("replayBtn").onclick=function(){
@@ -1735,11 +1920,13 @@ $("replayBtn").onclick=function(){
   toast("Repitiendo audio  (-"+CONFIG.replayCost+" s)");
   var lv=HM.levels[S.level];
   Voice.play(lv.audio,lv.es,function(){});
+  tutNotify("replay");
 };
 $("hint1").onclick=function(){useHint(0);};
 $("hint2").onclick=function(){useHint(1);};
 $("hint3").onclick=function(){useHint(2);};
-$("hint4").onclick=function(){useHint(3);};
+$("stopBtn").onclick=function(){ Snd.click(); uiStop(); };
+$("reachBtn").onclick=function(){ Snd.click(); uiReach(); };
 $("exitBtn").onclick=function(){
   Snd.click();
   showModal('<h2>Salir de la misi\u00f3n</h2><p>Tu progreso queda guardado por entrega.</p>'+
@@ -1760,6 +1947,7 @@ $("muteBtn").onclick=function(){
   $("sndOff").classList.toggle("hidden",!m);
 })();
 $("vocabToggle").onclick=function(){
+  if(S && !S.vocabUnlocked){ toast("Use the first hint to unlock the vocabulary list."); return; }
   Snd.click();
   var open=$("vocabList").classList.toggle("open");
   $("vocabEnToggle").classList.toggle("hidden",!open);
@@ -1780,7 +1968,7 @@ document.addEventListener("keydown",function(ev){
   var k=map[ev.key];
   if(!k) return;
   ev.preventDefault();
-  if(k==="enter") doEnter(); else doMove(k);
+  if(k==="enter") uiReach(); else doMove(k);
 });
 
 /* ============================================================
@@ -1818,13 +2006,17 @@ window.__mp={
   get state(){return S;},
   graph:G, validate:function(){return validateGraph(G);},
   moves:function(){return S?availableMoves(G,S.node,S.heading):null;},
-  go:function(k){ k==="enter"?doEnter():doMove(k); },
+  go:function(k){ k==="enter"?uiReach():doMove(k); },
   skipListen:function(){ Voice.stop(); onRiddleDone(); },
   jump:function(lv){ if(!S)return; S.level=lv; S.node=lv>0?HM.levels[lv-1].dest:HM.start.node; S.heading=0;
     setCourier(G.nodes[S.node].x,G.nodes[S.node].y); resetVan(); if(lv>=HM.stormAfterLevel){S.stormDone=true;applyStormState(true,true);} startLevel(lv); },
   storm:function(cb){ playStorm(cb||function(){}); },
   budget:function(){ var lv=HM.levels[S.level]; return shortestCommands(G,S.levelStart.node,0,lv.dest); },
-  fit:fitStage
+  deliver:function(){ if(S && S.node===HM.levels[S.level].dest) deliverSuccess(); },
+  stopAt:function(n){ return requestStop({node:n, silent:true}); },
+  advancePreview:function(k){ var m=availableMoves(G,S.node,S.heading)[k]; return m?advance(G,S.node,m.link):null; },
+  fit:fitStage,
+  unfreeze:endFreeze
 };
 
 /* ============================================================
@@ -1959,6 +2151,84 @@ function startSmoke(){
   requestAnimationFrame(tick);
   return {stop:function(){ run=false; try{ctx2.clearRect(0,0,cv.width,cv.height);}catch(e){} }};
 }
+
+var TUT=(function(){
+  var steps=[
+    {t:"Welcome to Todo Recto. Each delivery starts with a spoken clue in Spanish. This box shows the listening state.", target:"#objectiveState", panel:true,
+     onEnter:function(){ Voice.play(HM.levels[0].audio, HM.levels[0].es, function(){}); }},
+    {t:"Missed it? Replay the clue with this button. In a real delivery a replay costs 10 seconds.", target:"#replayBtn", require:"replay"},
+    {t:"Drive with the Spanish direction words. Only roads that really exist from the van will work, and a wrong pick costs nothing. Try one now.", target:"#bank", require:"move", delay:900},
+    {t:"Every command you use fills one circle in Ruta del dia, and Moves left counts down. Run out before delivering and the run fails.", target:"#stampRow", panel:true},
+    {t:"The van rolls past shops to the next corner. Press Stop, or the word para, to pull over at a shop along the way.", target:"#stopBtn", require:"stop"},
+    {t:"When you think the van is at the right place, press Reached destination.", target:"#reachBtn", require:"reach"},
+    {t:"The nearest shop lights up on the map so you can double check it before committing.", target:"#stage"},
+    {t:"The button now shows that shop's name. Press it again to confirm the delivery.", target:"#reachBtn", require:"confirm"},
+    {t:"Careful: confirming the wrong place costs 20 seconds off the clock.", target:"#timer"},
+    {t:"Stuck? Three hints live here: unlock the vocabulary list, reveal the destination name, or freeze the clock for 25 seconds.", target:".hints", panel:true},
+    {t:"That is the whole job. \u00a1Buena ruta!", target:null}
+  ];
+  var i=-1, active=false, afterCb=null;
+  function isMobile(){ return window.matchMedia && matchMedia("(max-width: 880px)").matches; }
+  function seen(){ try{ return localStorage.getItem(CONFIG.prefKey+"_tut")==="1"; }catch(e){ return true; } }
+  function markSeen(){ try{ localStorage.setItem(CONFIG.prefKey+"_tut","1"); }catch(e){} }
+  function place(target){
+    var ring=$("tutRing"), card=$("tutCard"), scrim=$("tutScrim");
+    var t=target?document.querySelector(target):null;
+    if(!t){
+      ring.style.display="none"; scrim.style.display="block";
+      card.classList.add("center"); return;
+    }
+    scrim.style.display="none";
+    card.classList.remove("center");
+    var r=t.getBoundingClientRect(), pad=8;
+    ring.style.display="block";
+    ring.style.left=(r.left-pad)+"px"; ring.style.top=(r.top-pad)+"px";
+    ring.style.width=(r.width+pad*2)+"px"; ring.style.height=(r.height+pad*2)+"px";
+    var cw=Math.min(320, window.innerWidth-24);
+    card.style.maxWidth=cw+"px";
+    var cx=Math.max(12, Math.min(window.innerWidth-cw-12, r.left+r.width/2-cw/2));
+    card.style.left=cx+"px";
+    if(r.bottom+190<window.innerHeight){ card.style.top=(r.bottom+14)+"px"; card.style.bottom="auto"; }
+    else { card.style.bottom=(window.innerHeight-r.top+14)+"px"; card.style.top="auto"; }
+  }
+  function next(){
+    i++;
+    if(i>=steps.length){ finish(); return; }
+    var st=steps[i];
+    if(isMobile()){ $("panel").classList.toggle("open", !!st.panel); }
+    if(st.onEnter) st.onEnter();
+    $("tutText").textContent=st.t;
+    $("tutNext").style.display = st.require ? "none" : "inline-flex";
+    $("tutNext").textContent = (i===steps.length-1) ? "Start delivering" : "Next";
+    setTimeout(function(){ place(st.target); }, 80);
+  }
+  function notify(ev){
+    if(!active) return;
+    var st=steps[i];
+    if(st && st.require===ev){ setTimeout(next, st.delay||500); }
+  }
+  function start(cb){
+    active=true; afterCb=cb; i=-1;
+    $("tut").classList.remove("hidden");
+    next();
+  }
+  function finish(){
+    if(!active) return;
+    active=false; markSeen();
+    $("tut").classList.add("hidden");
+    if(isMobile()) $("panel").classList.remove("open");
+    Voice.stop(); endFreeze();
+    var cb=afterCb; afterCb=null;
+    if(cb) cb();
+  }
+  window.addEventListener("resize", function(){ if(active && i>=0) place(steps[i].target); });
+  return { start:start, notify:notify, seen:seen, finish:finish, next:next,
+           reset:function(){ try{ localStorage.removeItem(CONFIG.prefKey+"_tut"); }catch(e){} },
+           get active(){ return active; } };
+})();
+$("tutNext").onclick=function(){ Snd.click(); if(TUT.active) TUT.next(); };
+$("tutSkip").onclick=function(){ Snd.click(); TUT.finish(); };
+$("tutLink").onclick=function(){ TUT.reset(); toast("Tutorial will play when you press Comenzar."); };
 
 (function runSplash(){
   var sp=$("splash");
