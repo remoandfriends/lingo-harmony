@@ -1026,22 +1026,40 @@ function advance(G,node,link){
 
 /* Moves available from a node with a heading. Returns map:
    command -> {link, blocked} */
+/* Command-centric selection: each command grabs the nearest real road
+   within a generous window. A command only fails when no road exists
+   in that direction at all. Windows overlap on purpose so a bending
+   onward road answers to both "straight" and its turn side. */
+var CMD_WINDOWS={
+  straight:{center:0,   ok:function(r){return Math.abs(r)<=55;}},
+  right:   {center:90,  ok:function(r){return r>=25 && r<=155;}},
+  left:    {center:-90, ok:function(r){return r<=-25 && r>=-155;}},
+  back:    {center:180, ok:function(r){return Math.abs(r)>=125;}}
+};
 function availableMoves(G,node,heading){
-  var res={};
-  G.adj[node].forEach(function(link){
+  var cands=G.adj[node].map(function(link){
     var E=G.edges[link.edge];
     var dep=departureAngle(G,node,link);
     var rel=normDeg(dep-heading);
-    var entry={link:link,blocked:!!E.closed,rel:rel};
-    var keys=[classifyRel(rel)];
-    if(E.bridge) keys.push("bridge");
-    keys.forEach(function(key){
-      if(res[key]){
-        if(Math.abs(rel)<Math.abs(res[key].rel)) res[key]=entry;
-        if(DEBUG) console.warn("sector collision at",node,key);
-      } else res[key]=entry;
-    });
+    return {link:link,blocked:!!E.closed,rel:rel,bridge:!!E.bridge};
   });
+  var res={};
+  Object.keys(CMD_WINDOWS).forEach(function(cmd){
+    var w=CMD_WINDOWS[cmd], best=null, bd=1e9;
+    cands.forEach(function(c){
+      if(!w.ok(c.rel)) return;
+      var d=Math.abs(normDeg(c.rel-w.center));
+      if(d<bd){bd=d;best=c;}
+    });
+    if(best) res[cmd]=best;
+  });
+  var bb=null, bbd=1e9;
+  cands.forEach(function(c){
+    if(!c.bridge) return;
+    var d=Math.abs(c.rel);
+    if(d<bbd){bbd=d;bb=c;}
+  });
+  if(bb) res["bridge"]=bb;
   return res;
 }
 
@@ -1091,13 +1109,13 @@ function validateGraph(G){
       var arrSamples=edgeSamples(G,arr.edge, arr.dir==="fwd"?"rev":"fwd"); /* traveling INTO n */
       var heading=arrivalHeading(arrSamples);
       var used={};
+      var mv=availableMoves(G,n,heading);
+      var reachable={};
+      Object.keys(mv).forEach(function(k){ reachable[mv[k].link.edge]=1; });
       G.adj[n].forEach(function(link){
-        var E=G.edges[link.edge];
-        var key=classifyRel(normDeg(departureAngle(G,n,link)-heading));
-        if(used[key] && !E.bridge && !used[key].bridge){
-          issues.push("collision at "+n+" arriving via "+arr.edge+" sector "+key);
+        if(!reachable[link.edge]){
+          issues.push("edge "+link.edge+" unreachable from "+n+" arriving via "+arr.edge);
         }
-        if(!used[key] || !E.bridge) used[key]={bridge:!!E.bridge};
       });
     });
   });
@@ -1229,7 +1247,10 @@ var Voice=(function(){
     try{ a.currentTime=0; }catch(e){}
     current=a;
     var p=a.play();
-    if(p&&p.catch) p.catch(function(){ if(!settled){settled=true; speakFallback(text,done);} });
+    if(p&&p.catch) p.catch(function(err){
+      if(err && err.name==="AbortError") return;
+      if(!settled){settled=true; speakFallback(text,done);}
+    });
   }
   return {play:play, stop:stop, preload:preload, usedTTS:function(){return usingTTS;}};
 })();
@@ -1315,7 +1336,7 @@ var BANK=[
 ];
 
 var PhraseVoice=(function(){
-  var cur=null;
+  var cur=null, els={}, dead={}, gen=0;
   function tts(txt){
     if(!window.speechSynthesis) return;
     try{ speechSynthesis.cancel(); }catch(e){}
@@ -1324,17 +1345,47 @@ var PhraseVoice=(function(){
     if(vs.length) u.voice=vs[0];
     speechSynthesis.speak(u);
   }
+  function getEl(id){
+    var a=els[id];
+    if(!a){
+      a=new Audio();
+      a.preload="auto"; a.crossOrigin="anonymous";
+      a.src=CONFIG.audioBase+"cmd-"+id+".mp3";
+      a.volume=0.9;
+      els[id]=a;
+    }
+    return a;
+  }
+  function preloadAll(ids){ ids.forEach(getEl); }
   function say(id,txt){
     if(Snd.isMuted()) return;
-    try{ if(cur){ cur.pause(); } }catch(e){}
-    var a=new Audio(CONFIG.audioBase+"cmd-"+id+".mp3");
-    a.volume=0.9;
+    gen++;
+    var myGen=gen;
+    if(cur){
+      cur.onerror=null; cur.onended=null;
+      try{ cur.pause(); }catch(e){}
+    }
+    if(dead[id]){ tts(txt); return; }
+    var a=getEl(id);
+    a.playbackRate=1;
     var fb=false;
-    a.onerror=function(){ if(!fb){fb=true; tts(txt);} };
-    a.play().catch(function(){ if(!fb){fb=true; tts(txt);} });
+    var fallback=function(genuine){
+      if(fb || myGen!==gen) return;
+      fb=true;
+      if(genuine) dead[id]=true;
+      tts(txt);
+    };
+    a.onerror=function(){ fallback(true); };
+    try{ a.currentTime=0; }catch(e){}
     cur=a;
+    var p=a.play();
+    if(p&&p.catch) p.catch(function(err){
+      if(err && err.name==="AbortError") return;   /* interrupted by a newer tap: stay silent */
+      if(err && err.name==="NotAllowedError") return;
+      fallback(false);
+    });
   }
-  return {say:say};
+  return {say:say, preloadAll:preloadAll};
 })();
 
 function renderBank(){
@@ -1571,6 +1622,7 @@ function chargeTime(sec,label){
    ============================================================ */
 function startMission(save){
   Music.play("game");
+  PhraseVoice.preloadAll(BANK.map(function(p){return p.id;}));
   if(!TUT.seen()){ runTutorialThen(function(){ startMissionReal(save); }); return; }
   startMissionReal(save);
 }
@@ -2091,7 +2143,7 @@ var Engine=(function(){
     o.frequency.exponentialRampToValueAtTime(190,t0+0.5);
     o.frequency.exponentialRampToValueAtTime(85,t0+1.05);
     g.gain.setValueAtTime(0,t0);
-    g.gain.linearRampToValueAtTime(0.5,t0+0.35);
+    g.gain.linearRampToValueAtTime(0.8,t0+0.35);
     g.gain.linearRampToValueAtTime(0,t0+1.1);
     o.start(t0); o.stop(t0+1.2);
   }
@@ -2099,7 +2151,7 @@ var Engine=(function(){
     if(running||Snd.isMuted())return;
     try{ ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return; }
     master=ctx.createGain(); master.gain.value=0.0; master.connect(ctx.destination);
-    master.gain.linearRampToValueAtTime(0.10, ctx.currentTime+1.2);
+    master.gain.linearRampToValueAtTime(0.24, ctx.currentTime+1.2);
     for(var v=0;v<2;v++){
       var o=ctx.createOscillator(); o.type="sawtooth"; o.frequency.value=52+v*17;
       var g=ctx.createGain(); g.gain.value=0.5;
