@@ -966,19 +966,58 @@ function snapAngle(a,win){
 function catmull(pts){
   if(pts.length<2) return pts.slice();
   var out=[], P=[pts[0]].concat(pts,[pts[pts.length-1]]);
-  var SEG=20;
+  var SEG=20, ALPHA=0.5;   /* centripetal: no cusps, no overshoot off the road */
+  function tnext(ti,a,b){
+    var dx=(b.x-a.x)*ASPECT, dy=b.y-a.y;
+    var d=Math.sqrt(dx*dx+dy*dy);
+    return ti+Math.pow(d<1e-6?1e-6:d,ALPHA);
+  }
   for(var i=0;i<P.length-3;i++){
     var p0=P[i],p1=P[i+1],p2=P[i+2],p3=P[i+3];
+    var t0=0,t1=tnext(t0,p0,p1),t2t=tnext(t1,p1,p2),t3t=tnext(t2t,p2,p3);
     for(var j=0;j<SEG;j++){
-      var t=j/SEG,t2=t*t,t3=t2*t;
+      var t=t1+(t2t-t1)*(j/SEG);
+      var a1x=(t1-t)/(t1-t0)*p0.x+(t-t0)/(t1-t0)*p1.x,
+          a1y=(t1-t)/(t1-t0)*p0.y+(t-t0)/(t1-t0)*p1.y,
+          a2x=(t2t-t)/(t2t-t1)*p1.x+(t-t1)/(t2t-t1)*p2.x,
+          a2y=(t2t-t)/(t2t-t1)*p1.y+(t-t1)/(t2t-t1)*p2.y,
+          a3x=(t3t-t)/(t3t-t2t)*p2.x+(t-t2t)/(t3t-t2t)*p3.x,
+          a3y=(t3t-t)/(t3t-t2t)*p2.y+(t-t2t)/(t3t-t2t)*p3.y;
+      var b1x=(t2t-t)/(t2t-t0)*a1x+(t-t0)/(t2t-t0)*a2x,
+          b1y=(t2t-t)/(t2t-t0)*a1y+(t-t0)/(t2t-t0)*a2y,
+          b2x=(t3t-t)/(t3t-t1)*a2x+(t-t1)/(t3t-t1)*a3x,
+          b2y=(t3t-t)/(t3t-t1)*a2y+(t-t1)/(t3t-t1)*a3y;
       out.push({
-        x:0.5*((2*p1.x)+(-p0.x+p2.x)*t+(2*p0.x-5*p1.x+4*p2.x-p3.x)*t2+(-p0.x+3*p1.x-3*p2.x+p3.x)*t3),
-        y:0.5*((2*p1.y)+(-p0.y+p2.y)*t+(2*p0.y-5*p1.y+4*p2.y-p3.y)*t2+(-p0.y+3*p1.y-3*p2.y+p3.y)*t3)
+        x:(t2t-t)/(t2t-t1)*b1x+(t-t1)/(t2t-t1)*b2x,
+        y:(t2t-t)/(t2t-t1)*b1y+(t-t1)/(t2t-t1)*b2y
       });
     }
   }
   out.push({x:pts[pts.length-1].x,y:pts[pts.length-1].y});
   return out;
+}
+
+/* Waypoints were placed by hand, so they jitter either side of the street
+   centreline and the spline turns that jitter into steering. Smooth it out,
+   but leash every point to MAXDEV of its authored spot and pin the endpoints,
+   so the road the designer drew is never abandoned. */
+function deJitter(pts){
+  if(pts.length<3) return pts;
+  var MAXDEV=0.45, ITERS=4, W=0.5;
+  var cur=pts.map(function(p){return {x:p.x,y:p.y};});
+  for(var it=0;it<ITERS;it++){
+    var next=cur.map(function(p){return {x:p.x,y:p.y};});
+    for(var i=1;i<cur.length-1;i++){
+      var tx=(cur[i-1].x+cur[i+1].x)/2, ty=(cur[i-1].y+cur[i+1].y)/2;
+      var nx=cur[i].x+(tx-cur[i].x)*W, ny=cur[i].y+(ty-cur[i].y)*W;
+      var dx=(nx-pts[i].x)*ASPECT, dy=ny-pts[i].y;
+      var d=Math.sqrt(dx*dx+dy*dy);
+      if(d>MAXDEV){ var s=MAXDEV/d; nx=pts[i].x+(nx-pts[i].x)*s; ny=pts[i].y+(ny-pts[i].y)*s; }
+      next[i].x=nx; next[i].y=ny;
+    }
+    cur=next;
+  }
+  return cur;
 }
 
 /* Build a graph object with fast lookups */
@@ -992,6 +1031,7 @@ function buildGraph(world){
     var pts=[{x:G.nodes[e.a].x,y:G.nodes[e.a].y}];
     e.w.forEach(function(w){pts.push({x:w[0],y:w[1]});});
     pts.push({x:G.nodes[e.b].x,y:G.nodes[e.b].y});
+    pts=deJitter(pts);
     var smooth=catmull(pts);
     var E={id:e.id,a:e.a,b:e.b,bridge:e.bridge||null,stormClose:e.stormClose||null,closed:false,
            fwd:smooth, rev:smooth.slice().reverse()};
@@ -1007,8 +1047,12 @@ function buildGraph(world){
 function edgeSamples(G,edgeId,dir){ return dir==="fwd"?G.edges[edgeId].fwd:G.edges[edgeId].rev; }
 function departureAngle(G,node,link){
   var s=edgeSamples(G,link.edge,link.dir);
-  var i=Math.min(4,s.length-1);
-  return angleOf(s[0],s[i]);
+  /* measure over a real stretch of road, not the first few spline points,
+     so the angle describes the street rather than sampling noise */
+  var BASE=2.2, i=1, acc=0;
+  while(i<s.length-1 && acc<BASE){ acc+=vdist(s[i-1],s[i]); i++; }
+  if(i<12) i=Math.min(12,s.length-1);
+  return snapAngle(angleOf(s[0],s[i]),12);
 }
 function arrivalHeading(samples){
   var n=samples.length;
@@ -1097,6 +1141,18 @@ function availableMoves(G,node,heading){
     });
     if(worst) res[worst]=c;
   });
+  /* layer 3: onward-road guarantee. If nothing claimed 'straight' but a road
+     continues that is not a reversal, straight takes the most forward one.
+     Prevents "Ahi no hay camino" while open road sits ahead of the van. */
+  if(!res.straight){
+    var fwd=null, fd=1e9;
+    cands.forEach(function(c){
+      var a=Math.abs(c.rel);
+      if(a>=110) return;              /* a genuine U-turn is not 'straight' */
+      if(a<fd){fd=a;fwd=c;}
+    });
+    if(fwd) res.straight=fwd;
+  }
   var bb=null, bbd=1e9;
   cands.forEach(function(c){
     if(!c.bridge) return;
@@ -1594,13 +1650,17 @@ function driveAlong(out,done){
       else if(!silent){ toast("No hay ninguna parada m\u00e1s adelante."); }
     }
     var p=pointAt(e);
-    var ahead=pointAt(Math.min(total,e+0.8));
-    var dxv=(ahead.x-p.x)*ASPECT, dyv=(ahead.y-p.y);
+    /* centred tangent over a real span of road: behind + ahead of the axle,
+       so the nose points where the street goes, not at the next spline wiggle */
+    var LOOK=2.4;
+    var behind=pointAt(Math.max(0,e-LOOK*0.5));
+    var ahead=pointAt(Math.min(total,e+LOOK));
+    var dxv=(ahead.x-behind.x)*ASPECT, dyv=(ahead.y-behind.y);
     if(Math.abs(dxv)+Math.abs(dyv)>0.001) orientVan(Math.atan2(dyv,dxv)*180/Math.PI, lastTs?ts-lastTs:16);
     lastTs=ts;
-    bobPhase+=(e-lastE)*1.7; lastE=e;
-    var bob=Math.sin(bobPhase)*0.55;
-    courier.style.transform="translate(-50%,-56%) translateY("+bob+"px)";
+    lastE=e;
+    /* no vertical bob: wheels stay on the road instead of floating */
+    courier.style.transform="translate(-50%,-56%)";
     setCourier(p.x,p.y);
     var finished = truncE==null ? t>=1 : e>=truncE-0.02;
     if(!finished){ requestAnimationFrame(step); }
