@@ -1671,14 +1671,14 @@ function setCourier(x,y){ place(courier,x,y); }
 function shortArc(d){ while(d>180)d-=360; while(d<-180)d+=360; return d; }
 var VAN_POSE=334; /* nose of the van art: up-right, 0=east, y-down */
 var vanInit=true;
-function resetVan(){ vanAngle=(typeof S==="object"&&S&&typeof S.heading==="number")?S.heading:VAN_POSE; vanPose=-1; vanInit=true; vanShow(vanAngle,1e9); }
+function resetVan(){ vanAngle=(typeof S==="object"&&S&&typeof S.heading==="number")?S.heading:VAN_POSE; vanPose=-1; vanInit=true; courierSvg.style.transform="none"; /* parked: always the clean painted art */ }
 /* A real car: the wheel line always lies along the direction of travel.
    The art natively drives at VAN_POSE deg; its mirror drives at 180-VAN_POSE.
    Pick whichever pose needs the smaller residual rotation and rotate by that
    residual. The van steers through turns; it never slides sideways and the
    windshield always leads. */
 function orientVan(theta,dt){
-  if(vanInit){ vanAngle=theta; vanInit=false; }
+  if(vanInit){ vanInit=false; vanAngle=VAN_POSE; /* pull out from the parked pose, swinging the nose to the road */ }
   var k=Math.min(1,(dt||16)/1000*10);
   vanAngle+=shortArc(theta-vanAngle)*k;
   vanShow(vanAngle,dt);
