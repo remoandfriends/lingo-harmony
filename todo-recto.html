@@ -1671,7 +1671,7 @@ function setCourier(x,y){ place(courier,x,y); }
 function shortArc(d){ while(d>180)d-=360; while(d<-180)d+=360; return d; }
 var VAN_POSE=334; /* nose of the van art: up-right, 0=east, y-down */
 var vanInit=true;
-function resetVan(){ vanAngle=VAN_POSE; facing=1; vanInit=true; courierSvg.style.transform="none"; }
+function resetVan(){ vanAngle=(typeof S==="object"&&S&&typeof S.heading==="number")?S.heading:VAN_POSE; vanPose=-1; vanInit=true; vanShow(vanAngle,1e9); }
 /* A real car: the wheel line always lies along the direction of travel.
    The art natively drives at VAN_POSE deg; its mirror drives at 180-VAN_POSE.
    Pick whichever pose needs the smaller residual rotation and rotate by that
@@ -1681,16 +1681,26 @@ function orientVan(theta,dt){
   if(vanInit){ vanAngle=theta; vanInit=false; }
   var k=Math.min(1,(dt||16)/1000*10);
   vanAngle+=shortArc(theta-vanAngle)*k;
-  var rN=shortArc(vanAngle-VAN_POSE);
-  var rM=shortArc(vanAngle-(180-VAN_POSE));
+  vanShow(vanAngle,dt);
+}
+/* Four grounded poses built from the one painted van:
+   native art nose (VAN_POSE), its mirror, and the half-turn of each.
+   The van always shows the pose nearest its true heading, with at most
+   VAN_TILT deg of residual rotation. Wheels stay glued; the front leads. */
+var vanPose=-1, VAN_TILT=14;
+function vanShow(angle,dt){
+  var noses=[VAN_POSE,180-VAN_POSE,(VAN_POSE+180)%360,(360-VAN_POSE)%360];
+  var tf=["rotate(R)","rotate(R) scaleX(-1)","rotate(T)","rotate(T) scaleX(-1)"];
+  var res=[],best=0;
+  for(var i=0;i<4;i++){ res[i]=shortArc(angle-noses[i]); if(Math.abs(res[i])<Math.abs(res[best]))best=i; }
   var now=performance.now();
-  var wantM=Math.abs(rM)<Math.abs(rN);
-  var isM=(facing===-1);
-  if(wantM!==isM && Math.abs(Math.abs(rN)-Math.abs(rM))>12 && now-lastFlip>240){ isM=wantM; facing=isM?-1:1; lastFlip=now; }
-  var a=isM?rM:rN;
-  var _s=a<0?-1:1,_m=Math.abs(a);
-  a=_s*(_m<=14?_m:14+(_m-14)*0.3); /* wheels stay flat: soft tilt clamp */
-  courierSvg.style.transform = isM ? "rotate("+a.toFixed(2)+"deg) scaleX(-1)" : "rotate("+a.toFixed(2)+"deg)";
+  if(vanPose<0){ vanPose=best; lastFlip=now; }
+  else if(best!==vanPose && Math.abs(res[vanPose])-Math.abs(res[best])>12 && now-lastFlip>240){ vanPose=best; lastFlip=now; }
+  var r=res[vanPose];
+  var s=r<0?-1:1, mm=Math.abs(r);
+  r=s*Math.min(mm,VAN_TILT);
+  var str=tf[vanPose].replace("R",r.toFixed(2)+"deg").replace("T",(180+r).toFixed(2)+"deg");
+  courierSvg.style.transform=str;
 }
 
 var stopReq=null; /* null | {any:true} | {node:id, silent:bool} */
