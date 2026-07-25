@@ -1669,7 +1669,7 @@ var courier=$("courier"), courierSvg=$("courierImg");
 var facing=1, lastFlip=0, vanAngle=0;
 function setCourier(x,y){ place(courier,x,y); }
 function shortArc(d){ while(d>180)d-=360; while(d<-180)d+=360; return d; }
-var VAN_POSE=154; /* measured wheel-line heading of the van art: down-left, 0=east, y-down */
+var VAN_POSE=334; /* nose of the van art: up-right, 0=east, y-down */
 var vanInit=true;
 function resetVan(){ vanAngle=VAN_POSE; facing=1; vanInit=true; courierSvg.style.transform="none"; }
 /* A real car: the wheel line always lies along the direction of travel.
@@ -1688,6 +1688,8 @@ function orientVan(theta,dt){
   var isM=(facing===-1);
   if(wantM!==isM && Math.abs(Math.abs(rN)-Math.abs(rM))>12 && now-lastFlip>240){ isM=wantM; facing=isM?-1:1; lastFlip=now; }
   var a=isM?rM:rN;
+  var _s=a<0?-1:1,_m=Math.abs(a);
+  a=_s*(_m<=14?_m:14+(_m-14)*0.3); /* wheels stay flat: soft tilt clamp */
   courierSvg.style.transform = isM ? "rotate("+a.toFixed(2)+"deg) scaleX(-1)" : "rotate("+a.toFixed(2)+"deg)";
 }
 
