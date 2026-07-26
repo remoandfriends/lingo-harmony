@@ -1506,9 +1506,7 @@ var BANK=[
   {id:"derecho",   txt:"sigue derecho",        cmd:"straight"},
   {id:"continua",  txt:"contin\u00faa",        cmd:"straight"},
   {id:"vuelta",    txt:"da la vuelta",         cmd:"back"},
-  {id:"cruza",     txt:"cruza el puente",      cmd:"bridge"},
-  {id:"entra",     txt:"entra",                cmd:"enter"},
-  {id:"para",      txt:"para",                 cmd:"stop"}
+  {id:"cruza",     txt:"cruza el puente",      cmd:"bridge"}
 ];
 
 var PhraseVoice=(function(){
@@ -1671,7 +1669,7 @@ function setCourier(x,y){ place(courier,x,y); }
 function shortArc(d){ while(d>180)d-=360; while(d<-180)d+=360; return d; }
 var VAN_POSE=334; /* nose of the van art: up-right, 0=east, y-down */
 var vanInit=true;
-function resetVan(){ vanAngle=(typeof S==="object"&&S&&typeof S.heading==="number")?S.heading:VAN_POSE; vanPose=-1; vanInit=true; courierSvg.style.transform="none"; /* parked: always the clean painted art */ }
+function resetVan(){ vanAngle=(typeof S==="object"&&S&&typeof S.heading==="number")?S.heading:VAN_POSE; vanPose=-1; vanInit=true; vanShow(vanAngle,1e9); /* spec: van aligns with its direction of travel at every stop */ }
 /* A real car: the wheel line always lies along the direction of travel.
    The art natively drives at VAN_POSE deg; its mirror drives at 180-VAN_POSE.
    Pick whichever pose needs the smaller residual rotation and rotate by that
@@ -1689,10 +1687,10 @@ function orientVan(theta,dt){
    VAN_TILT deg of residual rotation. Wheels stay glued; the front leads. */
 var vanPose=-1, VAN_TILT=14;
 function vanShow(angle,dt){
-  var noses=[VAN_POSE,180-VAN_POSE,(VAN_POSE+180)%360,(360-VAN_POSE)%360];
-  var tf=["rotate(R)","rotate(R) scaleX(-1)","rotate(T)","rotate(T) scaleX(-1)"];
+  var noses=[VAN_POSE,180-VAN_POSE]; /* two grounded poses only: the painted art and its mirror. No half-turns, the van can never appear upside down. */
+  var tf=["rotate(R)","rotate(R) scaleX(-1)"];
   var res=[],best=0;
-  for(var i=0;i<4;i++){ res[i]=shortArc(angle-noses[i]); if(Math.abs(res[i])<Math.abs(res[best]))best=i; }
+  for(var i=0;i<2;i++){ res[i]=shortArc(angle-noses[i]); if(Math.abs(res[i])<Math.abs(res[best]))best=i; }
   var now=performance.now();
   if(vanPose<0){ vanPose=best; lastFlip=now; }
   else if(best!==vanPose && Math.abs(res[vanPose])-Math.abs(res[best])>12 && now-lastFlip>240){ vanPose=best; lastFlip=now; }
